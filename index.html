@@ -16,11 +16,17 @@
       --glass: rgba(12,14,22,0.34);
       --glass2: rgba(12,14,22,0.44);
 
-      --accent1:#f2f2f2;
-      --accent2:#aeb7c7;
-
       --shadow: 0 18px 60px rgba(0,0,0,0.58);
       --r: 22px;
+
+      /* GREEN FX */
+      --green: #38ff9a;
+      --green2:#14c86f;
+      --greenGlow: 0 0 10px rgba(56,255,154,0.35), 0 0 28px rgba(20,200,111,0.20);
+      --greenGlowStrong: 0 0 12px rgba(56,255,154,0.55), 0 0 44px rgba(20,200,111,0.26);
+
+      --accent1:#f2f2f2;
+      --accent2:#aeb7c7;
     }
 
     *{ box-sizing:border-box; }
@@ -33,27 +39,30 @@
       overflow-x:hidden;
     }
 
-    /* ====== App Shell ====== */
+    /* ===== Layout: ensure centered in portrait too ===== */
     .shell{
       min-height:100vh;
-      display:grid;
-      grid-template-rows: auto auto 1fr auto;
+      display:flex;
+      flex-direction:column;
       gap: 6px;
     }
 
-    /* Top minimal bar */
     .topbar{
       display:flex;
       align-items:center;
       justify-content:space-between;
       padding: 10px 12px;
       gap:10px;
+      position:sticky;
+      top:0;
+      z-index: 40;
+      background: linear-gradient(180deg, rgba(15,17,21,0.86), rgba(15,17,21,0.00));
+      -webkit-backdrop-filter: blur(10px) saturate(140%);
+      backdrop-filter: blur(10px) saturate(140%);
     }
-    .topbar .left, .topbar .right{
-      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-    }
+    .topbar .left, .topbar .right{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
 
-    /* Buttons: glass, no border */
+    /* Buttons (glass, no border) */
     .iconbtn, .btn, .tab{
       border: none;
       background: var(--glass);
@@ -68,12 +77,26 @@
       -webkit-backdrop-filter: blur(14px) saturate(140%);
       backdrop-filter: blur(14px) saturate(140%);
       box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease, color 120ms ease;
     }
     .iconbtn:hover, .btn:hover, .tab:hover{ background: var(--glass2); }
     .iconbtn:active, .btn:active, .tab:active{ transform: translateY(1px); }
     .iconbtn:disabled, .btn:disabled{ opacity:0.5; cursor:not-allowed; }
 
-    /* Chips: glass, no border */
+    /* GREEN FX for top buttons + menu buttons */
+    .topFx{
+      color: rgba(56,255,154,0.90);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35), var(--greenGlow);
+    }
+    .topFx:hover{
+      color: rgba(56,255,154,1);
+      box-shadow: 0 12px 34px rgba(0,0,0,0.45), var(--greenGlowStrong);
+      background: rgba(12,18,18,0.36);
+    }
+    .topFx:active{
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35), var(--greenGlow);
+    }
+
     .chips{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
     .chip{
       display:inline-flex;
@@ -93,12 +116,12 @@
     }
     .chip b{ color: rgba(255,255,255,0.92); font-weight: 1000; }
 
-    /* Brand sits under topbar */
     .hero{
       display:grid;
       justify-items:center;
       gap: 6px;
-      padding: 2px 12px 6px;
+      padding: 2px 12px 0;
+      flex: 0 0 auto;
     }
     .hero h1{
       margin:0;
@@ -118,7 +141,6 @@
       text-align:center;
     }
 
-    /* Floating encouragement (not boxed) */
     .floatLine{
       min-height: 18px;
       padding: 0 12px 4px;
@@ -130,18 +152,18 @@
       transform: translateY(-4px);
       transition: opacity 220ms ease, transform 220ms ease;
       user-select:none;
+      flex: 0 0 auto;
     }
-    .floatLine.show{
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .floatLine.show{ opacity: 1; transform: translateY(0); }
 
-    /* ====== Center ====== */
+    /* Stage is truly centered vertically in portrait */
     .stage{
+      flex: 1 1 auto;
       display:flex;
       align-items:center;
       justify-content:center;
-      padding: 8px 12px 14px;
+      padding: 10px 12px 14px;
+      min-height: 0;
     }
 
     .focusCard{
@@ -158,7 +180,6 @@
       backdrop-filter: blur(14px) saturate(130%);
     }
 
-    /* Big global bar (FULL -> decreases) */
     .barWrap{
       border-radius: 999px;
       height: 34px;
@@ -188,13 +209,7 @@
       pointer-events:none;
     }
 
-    /* Focus task */
-    .target{
-      display:grid;
-      gap: 10px;
-      text-align:center;
-      align-items:center;
-    }
+    .target{ display:grid; gap: 10px; text-align:center; align-items:center; }
     .targetTitle{
       font-size: clamp(22px, 3.8vw, 34px);
       font-weight: 1000;
@@ -210,7 +225,6 @@
       padding: 0 6px;
     }
 
-    /* Small task bar */
     .sbarWrap{
       border-radius: 999px;
       height: 14px;
@@ -238,7 +252,6 @@
       pointer-events:none;
     }
 
-    /* Actions row: left Passer, center Roulette, right Dégommer */
     .actions{
       display:grid;
       grid-template-columns: 1fr auto 1fr;
@@ -270,6 +283,7 @@
       -webkit-backdrop-filter: blur(14px) saturate(140%);
       backdrop-filter: blur(14px) saturate(140%);
       border: none;
+      transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
     }
     .btnRoulette .ring{
       position:absolute; inset:10px;
@@ -279,7 +293,6 @@
     }
     .btnRoulette:hover{ background: rgba(12,14,22,0.62); }
     .btnRoulette:active{ transform: translateY(1px); }
-
     .btnRoulette.spinning .ring{ animation: spin 650ms linear infinite; }
     @keyframes spin{ from{ transform: rotate(0deg);} to{ transform: rotate(360deg);} }
 
@@ -300,18 +313,36 @@
       color: var(--fg);
       cursor:pointer;
       white-space:nowrap;
+      transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
     }
     .btnBig:hover{ background: rgba(12,14,22,0.62); }
+    .btnBig:active{ transform: translateY(1px); }
 
-    /* Subactions */
     .subActions{
       display:flex;
       justify-content:center;
       gap:10px;
       flex-wrap:wrap;
+      align-items:center;
     }
 
-    /* ====== Drawer ====== */
+    /* small menu button near Terminer */
+    .btnMiniMenu{
+      padding: 12px 12px;
+      border-radius: 16px;
+    }
+
+    .hint{
+      text-align:center;
+      color: rgba(255,255,255,0.55);
+      font-size: 12px;
+      line-height:1.25;
+      padding: 4px 12px 12px;
+      opacity:0.95;
+      flex: 0 0 auto;
+    }
+
+    /* ===== Drawer ===== */
     .overlay{
       position:fixed; inset:0;
       background: rgba(0,0,0,0.60);
@@ -326,10 +357,11 @@
       position:fixed;
       top:0; left:0;
       height:100vh;
-      width: min(600px, 92vw);
+      width: min(640px, 92vw);
       background:
-        radial-gradient(900px 420px at 40% 0%, rgba(255,255,255,0.10), transparent 62%),
-        linear-gradient(180deg, rgba(14,16,24,0.74), rgba(9,10,16,0.82));
+        radial-gradient(900px 420px at 40% 0%, rgba(56,255,154,0.10), transparent 62%),
+        radial-gradient(900px 420px at 10% 30%, rgba(255,255,255,0.08), transparent 62%),
+        linear-gradient(180deg, rgba(14,16,24,0.78), rgba(9,10,16,0.86));
       transform: translateX(-110%);
       transition: transform 180ms ease;
       z-index: 100;
@@ -338,8 +370,8 @@
       gap: 12px;
       padding: 14px;
       box-shadow: var(--shadow);
-      -webkit-backdrop-filter: blur(14px) saturate(130%);
-      backdrop-filter: blur(14px) saturate(130%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      backdrop-filter: blur(18px) saturate(140%);
     }
     .drawer.show{ transform: translateX(0); }
 
@@ -351,7 +383,8 @@
       letter-spacing: 0.14em;
       text-transform: uppercase;
       font-size: 12px;
-      color: rgba(255,255,255,0.65);
+      color: rgba(56,255,154,0.70);
+      text-shadow: 0 0 16px rgba(56,255,154,0.15);
     }
 
     .tabs{
@@ -360,7 +393,11 @@
       flex-wrap:wrap;
       align-items:center;
     }
-    .tab.active{ background: rgba(12,14,22,0.52); }
+    .tab.active{
+      background: rgba(12,18,18,0.36);
+      color: rgba(56,255,154,0.95);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25), var(--greenGlow);
+    }
 
     .drawerBody{
       overflow:auto;
@@ -376,8 +413,8 @@
       padding: 12px;
       display:grid;
       gap:10px;
-      -webkit-backdrop-filter: blur(14px) saturate(140%);
-      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
+      backdrop-filter: blur(16px) saturate(150%);
       box-shadow: 0 10px 30px rgba(0,0,0,0.28);
     }
     .cardTitle{
@@ -411,9 +448,11 @@
       gap:10px;
       justify-content:flex-end;
       flex-wrap:wrap;
+      align-items:center;
     }
+    .rowBtns .btn{ }
+    .rowBtns .btn.topFx{ }
 
-    /* Lists */
     .list{ display:grid; gap:8px; }
 
     .trow{
@@ -493,7 +532,85 @@
       gap:10px;
     }
 
-    /* Toast + FX */
+    /* Meme overlay */
+    .memeOverlay{
+      position:fixed;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,0.62);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity 180ms ease;
+      z-index: 130;
+      padding: 14px;
+    }
+    .memeOverlay.show{ opacity:1; pointer-events:auto; }
+    .memeCard{
+      width: min(720px, 94vw);
+      border-radius: 22px;
+      background:
+        radial-gradient(900px 420px at 30% 0%, rgba(56,255,154,0.14), transparent 62%),
+        linear-gradient(180deg, rgba(14,16,24,0.82), rgba(9,10,16,0.90));
+      box-shadow: var(--shadow);
+      padding: 14px;
+      display:grid;
+      gap: 10px;
+      -webkit-backdrop-filter: blur(18px) saturate(150%);
+      backdrop-filter: blur(18px) saturate(150%);
+    }
+    .memeTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .memeTop .title{
+      font-weight: 1000;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: rgba(56,255,154,0.90);
+      font-size: 12px;
+    }
+    .memeImg{
+      width:100%;
+      aspect-ratio: 16/9;
+      border-radius: 18px;
+      overflow:hidden;
+      background: rgba(0,0,0,0.25);
+      position:relative;
+    }
+    .memeImg img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      filter: saturate(1.1) contrast(1.05);
+    }
+    .memeCaption{
+      position:absolute;
+      inset:auto 0 0 0;
+      padding: 10px 12px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.00), rgba(0,0,0,0.65));
+      color: rgba(255,255,255,0.92);
+      font-weight: 1000;
+      letter-spacing: 0.04em;
+      font-size: 16px;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+    }
+    .memeCaption small{
+      display:block;
+      font-weight: 800;
+      opacity: 0.9;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-top: 4px;
+      color: rgba(56,255,154,0.88);
+      text-shadow: 0 2px 10px rgba(0,0,0,0.75);
+    }
+
     .toast{
       position:fixed;
       left:50%;
@@ -515,10 +632,7 @@
       -webkit-backdrop-filter: blur(14px) saturate(140%);
       backdrop-filter: blur(14px) saturate(140%);
     }
-    .toast.show{
-      opacity:1;
-      transform: translateX(-50%) translateY(-6px);
-    }
+    .toast.show{ opacity:1; transform: translateX(-50%) translateY(-6px); }
 
     canvas#fx{
       position:fixed;
@@ -527,21 +641,10 @@
       z-index: 110;
     }
 
-    /* Hint is minimal */
-    .hint{
-      text-align:center;
-      color: rgba(255,255,255,0.55);
-      font-size: 12px;
-      line-height:1.25;
-      padding: 6px 12px 14px;
-      opacity:0.95;
-    }
-
-    /* Responsive */
     @media (max-width: 520px){
       .btnRoulette{ width: 100px; height: 100px; }
       .btnBig{ min-height: 60px; padding: 14px 16px; }
-      .actions{ grid-template-columns: 1fr auto 1fr; gap: 10px; }
+      .actions{ gap: 10px; }
       .focusCard{ padding: 14px; }
       .barWrap{ height: 32px; }
     }
@@ -559,8 +662,8 @@
   <div class="shell">
     <div class="topbar" id="topbar">
       <div class="left">
-        <button class="iconbtn" id="btnMenu" aria-label="Menu">Menu</button>
-        <button class="iconbtn" id="btnNewDay">Nouveau jour</button>
+        <button class="iconbtn topFx" id="btnMenu" aria-label="Menu">Menu</button>
+        <button class="iconbtn topFx" id="btnNewDay">Nouveau jour</button>
       </div>
 
       <div class="right chips" aria-label="Compteurs">
@@ -581,8 +684,6 @@
 
     <div class="stage">
       <section class="focusCard" aria-label="Focus">
-
-        <!-- BIG GLOBAL BAR -->
         <div class="barWrap" aria-label="Progression globale">
           <div class="barFill" id="gFill"></div>
           <div class="barLabel" id="gLabel">100%</div>
@@ -599,7 +700,6 @@
             <span class="chip">Mode <b id="focusMode">—</b></span>
           </div>
 
-          <!-- SMALL TASK BAR -->
           <div class="sbarWrap" aria-label="Progression tâche">
             <div class="sbarFill" id="tFill"></div>
             <div class="sbarLabel" id="tLabel">100%</div>
@@ -623,6 +723,7 @@
           </div>
 
           <div class="subActions">
+            <button class="btn topFx btnMiniMenu" id="btnMiniMenu">Menu</button>
             <button class="btn" id="btnNotes">Notes</button>
             <button class="btn" id="btnDone">Terminer</button>
           </div>
@@ -640,18 +741,35 @@
   <div class="overlay" id="overlay"></div>
   <aside class="drawer" id="drawer" aria-label="Menu latéral">
     <div class="drawerHeader">
-      <div class="h">Menu</div>
-      <button class="btn" id="btnClose">Fermer</button>
+      <div class="h">Options</div>
+      <button class="btn topFx" id="btnClose">Fermer</button>
     </div>
 
     <div class="tabs" id="tabs"></div>
     <div class="drawerBody" id="drawerBody"></div>
 
     <div class="rowBtns">
-      <button class="btn" id="btnUndo">Undo</button>
-      <button class="btn" id="btnRedo">Redo</button>
+      <button class="btn topFx" id="btnUndo">Undo</button>
+      <button class="btn topFx" id="btnRedo">Redo</button>
     </div>
   </aside>
+
+  <!-- Meme modal -->
+  <div class="memeOverlay" id="memeOverlay" aria-label="Meme">
+    <div class="memeCard">
+      <div class="memeTop">
+        <div class="title">Victoire</div>
+        <button class="btn topFx" id="btnMemeClose">OK</button>
+      </div>
+      <div class="memeImg">
+        <img id="memeImg" alt="meme"/>
+        <div class="memeCaption" id="memeCaption">—<small id="memeSub">—</small></div>
+      </div>
+      <div class="tmini" id="memeFoot" style="justify-content:flex-start;">
+        Astuce : clique “OK” ou touche Echap.
+      </div>
+    </div>
+  </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -662,15 +780,15 @@
   // =========================
   // Storage + State
   // =========================
-  const LS_KEY = "eliminator_app_v3";
-  const MAX_HISTORY = 50;
+  const LS_KEY = "eliminator_app_v4";
+  const MAX_HISTORY = 60;
 
   const el = (id)=>document.getElementById(id);
   const now = ()=>Date.now();
   const clamp = (n,a,b)=>Math.max(a, Math.min(b,n));
   const uid = ()=> Math.random().toString(36).slice(2,10)+"-"+Date.now().toString(36);
 
-  // Top counters
+  // Counters
   const startTasksEl  = el("startTasks");
   const startTasks2El = el("startTasks2");
   const leftTasksEl   = el("leftTasks");
@@ -698,6 +816,7 @@
 
   // Buttons
   const btnMenu = el("btnMenu");
+  const btnMiniMenu = el("btnMiniMenu");
   const btnNewDay = el("btnNewDay");
   const btnRoulette = el("btnRoulette");
   const btnDego = el("btnDego");
@@ -713,6 +832,14 @@
   const drawerBody = el("drawerBody");
   const btnUndo = el("btnUndo");
   const btnRedo = el("btnRedo");
+
+  // Meme
+  const memeOverlay = el("memeOverlay");
+  const memeImg = el("memeImg");
+  const memeCaption = el("memeCaption");
+  const memeSub = el("memeSub");
+  const memeFoot = el("memeFoot");
+  const btnMemeClose = el("btnMemeClose");
 
   // Toast + FX
   const toast = el("toast");
@@ -735,29 +862,18 @@
   function initial(){
     const today = isoDay();
     return {
-      version: 3,
-      day: {
-        id: today,
-        startTasks: 0,
-        startEth: 0
-      },
+      version: 4,
+      day: { id: today, startTasks: 0, startEth: 0 },
       focusId: null,
 
-      // energy: 1 low, 2 medium, 3 high
       energyProfile: { level: 2, motivation: 2 }, // 1..3
 
-      // mode selection
-      mode: {
-        pick: "roulette",    // "roulette" | "order"
-        orderBy: "prio",     // "alpha" | "chrono" | "cat" | "prio" | "eth"
-        includeCats: []      // empty => all
-      },
+      mode: { pick: "roulette", orderBy: "prio", includeCats: [] },
 
       ui: { activeTab: "inbox", sort: "order" },
 
       tasks: [],
 
-      // prebuilt sets (editable)
       sets: [
         {
           id: "set_u74_adm",
@@ -828,11 +944,10 @@
         }
       ],
 
-      // Global notes (persist)
       scratch: "",
 
       history: { undo: [], redo: [] },
-      events: [] // visible log
+      events: []
     };
   }
 
@@ -847,7 +962,6 @@
       const obj = JSON.parse(raw);
       if(!obj || !Array.isArray(obj.tasks)) return null;
 
-      // migrations
       if(!obj.sets) obj.sets = initial().sets;
       if(!obj.history) obj.history = {undo:[], redo:[]};
       if(!obj.events) obj.events = [];
@@ -862,7 +976,7 @@
   }
 
   // =========================
-  // History (undo/redo) + visible log
+  // History + log
   // =========================
   function snapshot(){
     const s = structuredClone({...state});
@@ -871,8 +985,8 @@
   }
 
   function logEvent(text){
-    state.events.push({ t: now(), text: String(text).slice(0,220) });
-    state.events = state.events.slice(-250);
+    state.events.push({ t: now(), text: String(text).slice(0,260) });
+    state.events = state.events.slice(-260);
   }
 
   function pushHistory(label){
@@ -916,7 +1030,6 @@
   // =========================
   function cleanLine(s){
     let x = String(s||"").trim();
-    // remove weird separators, keep text
     x = x.replace(/[|¦]+/g," ").replace(/\s{2,}/g," ").trim();
     return x;
   }
@@ -924,8 +1037,8 @@
   function isCategoryLine(line){
     const s = String(line||"").trim();
     if(!s) return false;
-    if(/:\s*$/.test(s)) return true;                // ends with :
-    if(/^[A-ZÀ-ÖØ-Ý0-9\s/]+$/.test(s) && s.length <= 40) return true; // short uppercase header
+    if(/:\s*$/.test(s)) return true;
+    if(/^[A-ZÀ-ÖØ-Ý0-9\s/]+$/.test(s) && s.length <= 40) return true;
     return false;
   }
 
@@ -933,7 +1046,6 @@
     const t = text.toLowerCase();
     const m = t.match(/(\d{1,3})\s*(?:ethorion|ethorions|eth)\b/);
     if(m) return clamp(parseInt(m[1],10)||1, 1, 200);
-    // allow "torion/torions" as legacy
     const m2 = t.match(/(\d{1,3})\s*(?:torion|torions)\b/);
     if(m2) return clamp(parseInt(m2[1],10)||1, 1, 200);
     return null;
@@ -954,26 +1066,28 @@
   }
 
   function removeMetaFromTitle(raw){
-    // normalize long dashes
     let x = raw.replace(/\s*[—–]\s*/g, " — ");
-    // remove common meta chunks
     x = x.replace(/\b\d+\s*(ethorion|ethorions|eth|torion|torions)\b/gi, "");
     x = x.replace(/\b\d+\s*(minutes|minute|min)\b/gi, "");
     x = x.replace(/\b(importance|prio|priorité)\s*\d\b/gi, "");
     x = x.replace(/\b(fait|done)\b/gi, "");
     x = x.replace(/\s{2,}/g," ").trim();
-    // if still contains separators, keep left part as title
     const parts = x.split("—").map(s=>s.trim()).filter(Boolean);
     return (parts[0] || x).trim();
   }
 
   function inferEnergyFromText(title, category){
     const t = (title+" "+(category||"")).toLowerCase();
-    // low energy tasks
     if(/\b(appeler|tél|tel|téléphone|mail|email|répondre|encoder|encodage|note)\b/.test(t)) return 1;
-    // high energy tasks
     if(/\b(rapport|rédaction|dossier|analyse|attestation|procédure)\b/.test(t)) return 3;
     return 2;
+  }
+
+  function defaultEthFromEnergyHint(line, cat){
+    const t = (line+" "+(cat||"")).toLowerCase();
+    if(/\b(appeler|tél|tel|téléphone|répondre|mail|email)\b/.test(t)) return 2;
+    if(/\b(rapport|dossier|attestation)\b/.test(t)) return 10;
+    return 3;
   }
 
   function parsePasted(raw){
@@ -985,19 +1099,15 @@
       const line = line0.trim();
       if(!line) continue;
 
-      // explicit category header
       if(isCategoryLine(line)){
         currentCategory = line.replace(/:+$/,"").trim() || currentCategory;
         continue;
       }
 
-      // treat any line as a task (tolerant)
       const eth = parseEthorion(line) ?? defaultEthFromEnergyHint(line, currentCategory);
       const minutes = parseMinutes(line);
       const prio = parseImportance(line) ?? 2;
       const title = cleanLine(removeMetaFromTitle(line));
-
-      // ignore if title is empty
       if(!title) continue;
 
       out.push({
@@ -1011,15 +1121,6 @@
       });
     }
     return out;
-  }
-
-  function defaultEthFromEnergyHint(line, cat){
-    // if user didn't specify ethorion:
-    // calls/emails default 1-2; reports default 10; otherwise 3
-    const t = (line+" "+(cat||"")).toLowerCase();
-    if(/\b(appeler|tél|tel|téléphone|répondre|mail|email)\b/.test(t)) return 2;
-    if(/\b(rapport|dossier|attestation)\b/.test(t)) return 10;
-    return 3;
   }
 
   // =========================
@@ -1050,7 +1151,7 @@
     setDayBaseline("Nouveau jour");
     renderAll();
     showToast("Nouveau jour.", 1800);
-    floatSay("Nouveau terrain. Nouvelle chasse.");
+    floatSay("Nouvelle arène. Même toi, tu vas te surprendre.");
   }
 
   // =========================
@@ -1066,7 +1167,7 @@
     const parsed = parsePasted(raw);
     if(!parsed.length){
       showToast("Rien à ajouter.", 1800);
-      floatSay("Aucun fragment détecté. Recharge la matière.");
+      floatSay("Aucun ennemi détecté. Recolle la matière.");
       return;
     }
     pushHistory(`Ajout ${parsed.length} tâche(s)`);
@@ -1092,14 +1193,14 @@
 
     ensureDay();
     if(!state.focusId){
-      const t = pickNext();
+      const t = pickNext(true);
       if(t) state.focusId = t.id;
     }
 
     save();
     renderAll();
     showToast("Ajouté.", 1400);
-    floatSay("Cibles chargées.");
+    floatSay("Cibles chargées. Le boss final te regarde déjà.");
   }
 
   function getTask(id){ return state.tasks.find(t=>t.id===id) || null; }
@@ -1120,14 +1221,13 @@
     t.doneAt = now();
     t.ethorionRemaining = 0;
 
-    // Celebration scales with size
     const big = (t.ethorionTotal||0) >= 10;
-    const epicChance = big ? 0.55 : 0.15;
+    const epicChance = big ? 0.55 : 0.18;
     const epic = Math.random() < epicChance;
 
     if(epic){
       confetti(2.8);
-      boom(1100);
+      boom(1200);
       showToast(pick(DONE_EPIC), 4200);
       floatSay(pick(DONE_EPIC_POETIC), 4400);
     }else{
@@ -1137,6 +1237,9 @@
       floatSay(pick(DONE_POETIC), 3200);
     }
 
+    // Meme on task completion (not random: always, but content random)
+    showVictoryMeme(t);
+
     const next = pickNext();
     state.focusId = next ? next.id : null;
 
@@ -1144,7 +1247,6 @@
     renderAll();
 
     if(!state.focusId && countActiveTasks()===0){
-      // end of all tasks
       setTimeout(()=>{
         confetti(3.4);
         boom(1800);
@@ -1165,10 +1267,7 @@
     pushHistory("Dégommage");
     t.ethorionRemaining = Math.max(0, (t.ethorionRemaining||0) - 1);
 
-    // small celebration only on each fragment
-    if(Math.random() < 0.35){
-      confetti(0.9);
-    }
+    if(Math.random() < 0.38) confetti(0.9);
     flashSoft();
     floatSay(pick(LINES), 2600);
 
@@ -1259,12 +1358,12 @@
     if(by === "alpha"){
       arr.sort((a,b)=> (a.title||"").localeCompare(b.title||"", "fr"));
     } else if(by === "chrono"){
-      arr.sort((a,b)=> (a.createdAt||0) - (b.createdAt||0)); // old -> new
+      arr.sort((a,b)=> (a.createdAt||0) - (b.createdAt||0));
     } else if(by === "cat"){
       arr.sort((a,b)=> (a.category||"").localeCompare(b.category||"", "fr") || (a.title||"").localeCompare(b.title||"", "fr"));
     } else if(by === "eth"){
       arr.sort((a,b)=> (b.ethorionRemaining||0) - (a.ethorionRemaining||0));
-    } else { // prio default
+    } else {
       arr.sort((a,b)=> (b.priority||2)-(a.priority||2) || (a.order||0)-(b.order||0));
     }
 
@@ -1273,8 +1372,7 @@
 
   function pickNext(allowSame=false){
     if(state.mode?.pick === "order"){
-      const t = pickOrderedTask();
-      return t;
+      return pickOrderedTask();
     }
     return pickEnergyRoulette(allowSame);
   }
@@ -1283,10 +1381,6 @@
   // Energy-based Roulette
   // =========================
   function energyCaps(level){
-    // Rules:
-    // - energy 1 (low): mostly <=1, sometimes 2-3, almost never >3
-    // - energy 2 (medium): mostly 1-4, sometimes 5-8, rarely >8
-    // - energy 3 (high): anything, still prefers priority & progress
     if(level===1) return { softMax: 1, rareMax: 3, rareProb: 0.22, hardMaxProb: 0.03, hardMax: 999 };
     if(level===2) return { softMax: 4, rareMax: 8, rareProb: 0.25, hardMaxProb: 0.08, hardMax: 16 };
     return { softMax: 8, rareMax: 16, rareProb: 0.28, hardMaxProb: 0.18, hardMax: 999 };
@@ -1296,66 +1390,44 @@
     const pool0 = getActivePool();
     if(!pool0.length) return null;
 
-    const E = clamp(state.energyProfile.level||2, 1, 3);      // 1..3
-    const M = clamp(state.energyProfile.motivation||2, 1, 3); // 1..3
+    const E = clamp(state.energyProfile.level||2, 1, 3);
+    const M = clamp(state.energyProfile.motivation||2, 1, 3);
     const caps = energyCaps(E);
 
-    // Filter pool based on energy rules (soft + rare + hard)
     const pool = pool0.filter(t=>{
       const rem = Math.max(1, Math.ceil(t.ethorionRemaining||1));
       if(rem <= caps.softMax) return true;
-
-      // rare window
       if(rem <= caps.rareMax) return Math.random() < caps.rareProb;
-
-      // hard window (only if allowed for that energy)
       if(rem <= caps.hardMax) return Math.random() < caps.hardMaxProb;
-
       return false;
     });
 
-    const finalPool = pool.length ? pool : pool0; // never get stuck
+    const finalPool = pool.length ? pool : pool0;
 
-    // Weighted pick: priority + fit energyTag + motivation prefers short when low motivation
     const weights = finalPool.map(t=>{
       const rem = Math.max(1, Math.ceil(t.ethorionRemaining||1));
       const pr = (t.priority===3? 3 : t.priority===2? 2 : 1);
 
-      // energyTag fit
       let fit = 1.0;
-      if(E===1){
-        fit *= (t.energyTag===1 ? 1.60 : t.energyTag===2 ? 0.95 : 0.55);
-      } else if(E===2){
-        fit *= (t.energyTag===1 ? 1.12 : t.energyTag===2 ? 1.25 : 0.98);
-      } else {
-        fit *= (t.energyTag===3 ? 1.30 : 1.06);
-      }
+      if(E===1) fit *= (t.energyTag===1 ? 1.60 : t.energyTag===2 ? 0.95 : 0.55);
+      else if(E===2) fit *= (t.energyTag===1 ? 1.12 : t.energyTag===2 ? 1.25 : 0.98);
+      else fit *= (t.energyTag===3 ? 1.30 : 1.06);
 
-      // motivation biases towards shorter if motivation low
       let mot = 1.0;
-      if(M===1){
-        mot *= (rem<=2 ? 1.55 : rem<=4 ? 1.10 : 0.70);
-      } else if(M===2){
-        mot *= (rem<=3 ? 1.18 : 1.0);
-      } else {
-        mot *= 1.0;
-      }
+      if(M===1) mot *= (rem<=2 ? 1.55 : rem<=4 ? 1.10 : 0.70);
+      else if(M===2) mot *= (rem<=3 ? 1.18 : 1.0);
 
-      // gentle "progress" factor: prefer tasks already in motion
       const total = Math.max(1, t.ethorionTotal||1);
-      const doneFrac = (total - (t.ethorionRemaining||0)) / total; // 0..1
+      const doneFrac = (total - (t.ethorionRemaining||0)) / total;
       const progressBoost = 1.0 + (doneFrac * 0.25);
 
-      // slight penalty for very long tasks when low energy
       const longPenalty = (E===1 && rem>3) ? 0.65 : (E===2 && rem>8) ? 0.80 : 1.0;
 
       return Math.max(0.2, rem * pr * fit * mot * progressBoost * longPenalty);
     });
 
-    // Avoid re-picking same focus too often if asked
     let candidate = weightedPick(finalPool, weights);
     if(!allowSame && state.focusId && candidate && candidate.id === state.focusId && finalPool.length > 1){
-      // try one re-roll
       candidate = weightedPick(finalPool, weights);
     }
     return candidate;
@@ -1371,7 +1443,7 @@
     return items[items.length-1];
   }
 
-  // Roulette suspense (visual spin only)
+  // Roulette suspense
   let rouletteLock = false;
   function roulette(){
     if(rouletteLock) return;
@@ -1403,7 +1475,7 @@
   }
 
   // =========================
-  // Sorting (for list view only)
+  // List sort
   // =========================
   function getActiveSorted(){
     const items = state.tasks.filter(t=>!t.done);
@@ -1434,12 +1506,8 @@
   function sumActiveEth(){
     return state.tasks.reduce((a,t)=>a + (t.done?0:(t.ethorionRemaining||0)), 0);
   }
-  function countActiveTasks(){
-    return state.tasks.filter(t=>!t.done).length;
-  }
-  function countDoneTasks(){
-    return state.tasks.filter(t=>t.done).length;
-  }
+  function countActiveTasks(){ return state.tasks.filter(t=>!t.done).length; }
+  function countDoneTasks(){ return state.tasks.filter(t=>t.done).length; }
 
   function renderCounters(){
     ensureDay();
@@ -1581,10 +1649,10 @@
           </div>
         </div>
         <div class="tacts">
-          ${!t.done ? `<button class="btn" data-a="focus">Focus</button>` : ""}
-          ${!t.done ? `<button class="btn" data-a="eth">Eth</button>` : ""}
-          ${!t.done ? `<button class="btn" data-a="dup">Dupl</button>` : ""}
-          ${!t.done ? `<button class="btn" data-a="ok">OK</button>` : ""}
+          ${!t.done ? `<button class="btn topFx" data-a="focus">Focus</button>` : ""}
+          ${!t.done ? `<button class="btn topFx" data-a="eth">Eth</button>` : ""}
+          ${!t.done ? `<button class="btn topFx" data-a="dup">Dupl</button>` : ""}
+          ${!t.done ? `<button class="btn topFx" data-a="ok">OK</button>` : ""}
           <button class="btn" data-a="x">X</button>
         </div>
       </div>
@@ -1621,8 +1689,8 @@
 Lignes finissant par : = catégories.
 Tout le reste = tâches."></textarea>
       <div class="rowBtns">
-        <button class="btn" id="btnAdd">Ajouter</button>
-        <button class="btn" id="btnBaseline">Fixer départ</button>
+        <button class="btn topFx" id="btnAdd">Ajouter</button>
+        <button class="btn topFx" id="btnBaseline">Fixer départ</button>
       </div>
     `;
     const ta = card.querySelector("#inboxTA");
@@ -1639,7 +1707,7 @@ Tout le reste = tâches."></textarea>
       setDayBaseline("Départ re-fixé");
       renderAll();
       showToast("Départ fixé.", 1500);
-      floatSay("Départ verrouillé. On y va.");
+      floatSay("Départ verrouillé. Exécution.");
     });
 
     ta.addEventListener("keydown", (e)=>{
@@ -1794,7 +1862,7 @@ Tout le reste = tâches."></textarea>
       <div class="cardTitle"><span>Sets</span><span>appliquer = ajouter</span></div>
       <div class="list" id="setsList"></div>
       <div class="rowBtns">
-        <button class="btn" id="btnNewSet">+ Set</button>
+        <button class="btn topFx" id="btnNewSet">+ Set</button>
       </div>
     `;
 
@@ -1810,8 +1878,8 @@ Tout le reste = tâches."></textarea>
             <div class="tmini">${esc(String((s.lines||[]).length))} lignes</div>
           </div>
           <div class="tacts">
-            <button class="btn" data-a="apply">Appliquer</button>
-            <button class="btn" data-a="edit">Éditer</button>
+            <button class="btn topFx" data-a="apply">Appliquer</button>
+            <button class="btn topFx" data-a="edit">Éditer</button>
             <button class="btn" data-a="del">X</button>
           </div>
         </div>
@@ -1820,7 +1888,7 @@ Tout le reste = tâches."></textarea>
       row.querySelector('[data-a="apply"]').addEventListener("click", ()=>{
         addTasksFromText((s.lines||[]).join("\n"));
         showToast("Set appliqué.", 1500);
-        floatSay("Set injecté.");
+        floatSay("Set injecté. Et maintenant… baston.");
       });
 
       row.querySelector('[data-a="edit"]').addEventListener("click", ()=>{
@@ -1853,7 +1921,7 @@ Tout le reste = tâches."></textarea>
       <textarea id="setLines" placeholder="CATÉGORIE:
 Tâche — 3 ethorions — importance 2">${esc(s ? (s.lines||[]).join("\n") : "")}</textarea>
       <div class="rowBtns">
-        <button class="btn" id="btnSaveSet">Enregistrer</button>
+        <button class="btn topFx" id="btnSaveSet">Enregistrer</button>
         <button class="btn" id="btnCancelSet">Annuler</button>
       </div>
     `;
@@ -1914,9 +1982,9 @@ Tâche — 3 ethorions — importance 2">${esc(s ? (s.lines||[]).join("\n") : ""
 Vide = toutes."></textarea>
 
       <div class="rowBtns">
-        <button class="btn" id="btnApplyMode">Appliquer</button>
-        <button class="btn" id="btnAllCats">Toutes</button>
-        <button class="btn" id="btnOnlyCurrentCat">Cat de la cible</button>
+        <button class="btn topFx" id="btnApplyMode">Appliquer</button>
+        <button class="btn topFx" id="btnAllCats">Toutes</button>
+        <button class="btn topFx" id="btnOnlyCurrentCat">Cat de la cible</button>
       </div>
 
       <div class="tmini">
@@ -1942,7 +2010,6 @@ Vide = toutes."></textarea>
         ? raw.split(/\r?\n/).map(s=>s.trim()).filter(Boolean)
         : [];
 
-      // if focus becomes invalid (filtered out), re-pick
       if(state.focusId){
         const f = getTask(state.focusId);
         if(f){
@@ -1957,7 +2024,7 @@ Vide = toutes."></textarea>
       save();
       renderAll();
       showToast("Mode appliqué.", 1400);
-      floatSay("Filtres verrouillés.");
+      floatSay("Filtres verrouillés. L’ennemi n’a aucune chance.");
     });
 
     wrap.querySelector("#btnAllCats").addEventListener("click", ()=>{
@@ -1992,12 +2059,12 @@ Vide = toutes."></textarea>
       </select>
 
       <div class="tmini">
-        Règle roulette : énergie basse = surtout tâches courtes (≤1), parfois 2–3.
+        Énergie basse = surtout tâches courtes (≤1), parfois 2–3.
         Énergie haute = tâches plus longues acceptées.
       </div>
 
       <div class="rowBtns">
-        <button class="btn" id="btnApply">Appliquer</button>
+        <button class="btn topFx" id="btnApply">Appliquer</button>
       </div>
     `;
 
@@ -2013,7 +2080,7 @@ Vide = toutes."></textarea>
       save();
       renderAll();
       showToast("OK", 1200);
-      floatSay("Réglage interne mis à jour.");
+      floatSay("Réacteur interne calibré. On va casser du dossier.");
     });
 
     return wrap;
@@ -2026,7 +2093,7 @@ Vide = toutes."></textarea>
       <div class="cardTitle"><span>Notes</span><span>persistantes</span></div>
       <textarea id="scratchTA" placeholder="Numéros, idées, micro-notes…">${esc(state.scratch||"")}</textarea>
       <div class="rowBtns">
-        <button class="btn" id="btnSaveScratch">Enregistrer</button>
+        <button class="btn topFx" id="btnSaveScratch">Enregistrer</button>
         <button class="btn" id="btnClearScratch">Vider</button>
       </div>
     `;
@@ -2037,7 +2104,7 @@ Vide = toutes."></textarea>
       state.scratch = ta.value.slice(0, 20000);
       save();
       showToast("Notes ok.", 1200);
-      floatSay("Notes scellées.");
+      floatSay("Mémoire scellée. Aucun témoin.");
     });
 
     wrap.querySelector("#btnClearScratch").addEventListener("click", ()=>{
@@ -2060,7 +2127,7 @@ Vide = toutes."></textarea>
     const list = document.createElement("div");
     list.className = "list";
 
-    state.events.slice().reverse().slice(0, 140).forEach(ev=>{
+    state.events.slice().reverse().slice(0, 160).forEach(ev=>{
       const row = document.createElement("div");
       row.className = "trow";
       const d = new Date(ev.t);
@@ -2099,10 +2166,8 @@ Vide = toutes."></textarea>
       <div class="tmini">Reste: ${esc(String(leftTasks))} tâches · ${esc(String(leftEth))} ETH</div>
       <div class="tmini">Éliminé: ${esc(String(elimEth))} ETH · Terminé: ${esc(String(doneTasks))} tâches (${esc(String(pctTasks))}%)</div>
     `;
-
     wrap.appendChild(box);
 
-    // by category
     const byCat = {};
     state.tasks.forEach(t=>{
       const c = t.category || "Sans catégorie";
@@ -2147,7 +2212,7 @@ Vide = toutes."></textarea>
   }
 
   // =========================
-  // Notes for current task
+  // Notes for current task (quick)
   // =========================
   function openNotes(){
     const t = getTask(state.focusId);
@@ -2158,14 +2223,13 @@ Vide = toutes."></textarea>
     }
 
     openDrawer();
-    setTab("inbox"); // keep tabs consistent but override body
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
-      <div class="cardTitle"><span>Notes</span><span>cible</span></div>
+      <div class="cardTitle"><span>Notes (cible)</span><span>${esc(t.title).slice(0,18)}…</span></div>
       <textarea id="notesTA" placeholder="Notes">${esc(t.notes||"")}</textarea>
       <div class="rowBtns">
-        <button class="btn" id="btnSaveNotes">Enregistrer</button>
+        <button class="btn topFx" id="btnSaveNotes">Enregistrer</button>
         <button class="btn" id="btnBack">Retour</button>
       </div>
     `;
@@ -2176,7 +2240,7 @@ Vide = toutes."></textarea>
       save();
       renderAll();
       showToast("Note ok.", 1200);
-      floatSay("Trace conservée.");
+      floatSay("Trace conservée. Comme un film d’action, mais administratif.");
     });
     card.querySelector("#btnBack").addEventListener("click", ()=>{
       renderDrawer();
@@ -2187,7 +2251,7 @@ Vide = toutes."></textarea>
   }
 
   // =========================
-  // Drawer open/close
+  // Drawer open/close (FIXED)
   // =========================
   function openDrawer(){
     overlay.classList.add("show");
@@ -2199,10 +2263,9 @@ Vide = toutes."></textarea>
     drawer.classList.remove("show");
   }
 
-  btnMenu.addEventListener("click", ()=>{
-    if(drawer.classList.contains("show")) closeDrawer();
-    else openDrawer();
-  });
+  // IMPORTANT: Menu now actually opens the drawer
+  btnMenu.addEventListener("click", openDrawer);
+  btnMiniMenu.addEventListener("click", openDrawer);
   btnClose.addEventListener("click", closeDrawer);
   overlay.addEventListener("click", closeDrawer);
 
@@ -2222,13 +2285,14 @@ Vide = toutes."></textarea>
   btnUndo.addEventListener("click", undo);
   btnRedo.addEventListener("click", redo);
 
-  // Keyboard (minimal, no jargon)
+  // Keyboard
   window.addEventListener("keydown", (e)=>{
     const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
     const inField = (tag==="textarea" || tag==="input" || tag==="select");
 
     if(e.key==="Escape"){
       closeDrawer();
+      hideMeme();
       return;
     }
     if(inField) return;
@@ -2237,12 +2301,10 @@ Vide = toutes."></textarea>
     if(e.key.toLowerCase()==="d"){ e.preventDefault(); degoOne(); return; }
     if(e.key.toLowerCase()==="m"){
       e.preventDefault();
-      if(drawer.classList.contains("show")) closeDrawer();
-      else openDrawer();
+      openDrawer();
       return;
     }
 
-    // undo/redo
     if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="z" && !e.shiftKey){
       e.preventDefault(); undo(); return;
     }
@@ -2252,7 +2314,7 @@ Vide = toutes."></textarea>
   });
 
   // =========================
-  // Float line + Toast + FX
+  // Toast + Float + FX
   // =========================
   function showToast(msg, ms=1600){
     toast.textContent = msg;
@@ -2310,7 +2372,7 @@ Vide = toutes."></textarea>
     const div = document.createElement("div");
     div.style.position="fixed";
     div.style.inset="0";
-    div.style.background="rgba(242,242,242,0.10)";
+    div.style.background="rgba(56,255,154,0.09)";
     div.style.pointerEvents="none";
     div.style.zIndex="115";
     div.style.opacity="0";
@@ -2325,7 +2387,7 @@ Vide = toutes."></textarea>
     const div = document.createElement("div");
     div.style.position="fixed";
     div.style.inset="0";
-    div.style.background="rgba(242,242,242,0.06)";
+    div.style.background="rgba(56,255,154,0.06)";
     div.style.pointerEvents="none";
     div.style.zIndex="115";
     div.style.opacity="0";
@@ -2337,7 +2399,6 @@ Vide = toutes."></textarea>
   }
 
   function boom(ms=1200){
-    // simple expanding shockwave
     const W = window.innerWidth, H = window.innerHeight;
     const cx = W/2, cy = H*0.60;
     const start = now();
@@ -2350,14 +2411,14 @@ Vide = toutes."></textarea>
       const r = 20 + k*Math.max(W,H)*0.55;
 
       fx.globalAlpha = (1-k)*0.55;
-      fx.strokeStyle = "rgba(242,242,242,0.75)";
+      fx.strokeStyle = "rgba(56,255,154,0.75)";
       fx.lineWidth = 2 + (1-k)*6;
       fx.beginPath();
       fx.arc(cx,cy,r,0,Math.PI*2);
       fx.stroke();
 
       fx.globalAlpha = (1-k)*0.18;
-      fx.fillStyle = "rgba(242,242,242,0.35)";
+      fx.fillStyle = "rgba(56,255,154,0.25)";
       fx.beginPath();
       fx.arc(cx,cy,r*0.55,0,Math.PI*2);
       fx.fill();
@@ -2367,6 +2428,105 @@ Vide = toutes."></textarea>
     };
     requestAnimationFrame(tick);
   }
+
+  // =========================
+  // Meme generator (no external fetch)
+  // Uses inline SVG "meme-like" images to avoid CORS + keep single-file.
+  // =========================
+  const MEME_BANK = [
+    { top:"VICTOIRE ABSURDE", bottom:"LE DOSSIER A PRIS UN RKO DANS LE TABLEUR." , tag:"SUPER HÉROS DE BUREAU"},
+    { top:"BATAILLE", bottom:"TU AS FAIT UNE SUPLEX À L’OBSTACLE.", tag:"MODE CATCH ACTIVÉ"},
+    { top:"FINISHER", bottom:"LE PROBLÈME A ÉTÉ PINNÉ EN 3 ETHORIONS.", tag:"COMPTE OFFICIEL"},
+    { top:"GLORIEUX", bottom:"TU AS DÉGOMMÉ ÇA COMME UN BOSS FINAL EN PYJAMA.", tag:"RESPECT"},
+    { top:"RAGE DOMPTÉE", bottom:"TU AS MIS LA PAPERASSE EN SOUS-MISSION.", tag:"QUÊTE SECONDAIRE: TERMINÉE"},
+    { top:"CHAMPION", bottom:"L’ADMINISTRATION A PERDU PAR KO TECHNIQUE.", tag:"ARBITRE: TOI"},
+    { top:"MYTHIQUE", bottom:"TU AS CRITÉ “HADOUKEN” ET LE TRUC A DISPARU.", tag:"ARCADE"},
+    { top:"LÉGENDE", bottom:"UN MAIL A ÉTÉ ENVOYÉ. UNE ÈRE S’ACHÈVE.", tag:"HISTOIRE"}
+  ];
+
+  function svgMemeDataUrl({top,bottom,tag}){
+    const safe = (s)=> String(s).replace(/[&<>]/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;" }[c]));
+    const TOP = safe(top);
+    const BOT = safe(bottom);
+    const TAG = safe(tag);
+
+    const svg =
+`<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720">
+  <defs>
+    <radialGradient id="g" cx="35%" cy="10%" r="90%">
+      <stop offset="0%" stop-color="rgba(56,255,154,0.22)"/>
+      <stop offset="55%" stop-color="rgba(255,255,255,0.06)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0.65)"/>
+    </radialGradient>
+    <linearGradient id="b" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b0d12"/>
+      <stop offset="100%" stop-color="#151a2a"/>
+    </linearGradient>
+    <filter id="blur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+  </defs>
+
+  <rect width="1280" height="720" fill="url(#b)"/>
+  <circle cx="360" cy="160" r="360" fill="url(#g)"/>
+  <circle cx="1080" cy="640" r="420" fill="rgba(56,255,154,0.08)" filter="url(#blur)"/>
+
+  <!-- fake "hero silhouette" -->
+  <g opacity="0.95">
+    <path d="M640 170c90 0 160 70 160 160 0 68-40 126-98 150l20 170H558l20-170c-58-24-98-82-98-150 0-90 70-160 160-160z"
+          fill="rgba(255,255,255,0.10)"/>
+    <path d="M560 420c40 25 120 25 160 0" stroke="rgba(56,255,154,0.45)" stroke-width="6" fill="none"/>
+  </g>
+
+  <!-- top text -->
+  <text x="50%" y="90" text-anchor="middle"
+        font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial"
+        font-size="64" font-weight="900" letter-spacing="4"
+        fill="rgba(255,255,255,0.92)"
+        stroke="rgba(0,0,0,0.65)" stroke-width="6"
+        paint-order="stroke">
+        ${TOP}
+  </text>
+
+  <!-- bottom text -->
+  <text x="50%" y="610" text-anchor="middle"
+        font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial"
+        font-size="46" font-weight="900" letter-spacing="1.5"
+        fill="rgba(255,255,255,0.92)"
+        stroke="rgba(0,0,0,0.65)" stroke-width="6"
+        paint-order="stroke">
+        ${BOT}
+  </text>
+
+  <text x="50%" y="675" text-anchor="middle"
+        font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial"
+        font-size="28" font-weight="900" letter-spacing="3"
+        fill="rgba(56,255,154,0.85)">
+        ${TAG}
+  </text>
+</svg>`;
+    return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  }
+
+  function showVictoryMeme(task){
+    const m = MEME_BANK[Math.floor(Math.random()*MEME_BANK.length)];
+    memeImg.src = svgMemeDataUrl(m);
+    memeCaption.firstChild && (memeCaption.firstChild.nodeValue = m.bottom); // keep overlay text clean
+    memeCaption.textContent = m.bottom;
+    memeSub.textContent = m.tag;
+    memeFoot.textContent = `Cible : ${task.title}`;
+
+    memeOverlay.classList.add("show");
+  }
+
+  function hideMeme(){
+    memeOverlay.classList.remove("show");
+  }
+
+  btnMemeClose.addEventListener("click", hideMeme);
+  memeOverlay.addEventListener("click", (e)=>{
+    if(e.target === memeOverlay) hideMeme();
+  });
 
   // =========================
   // Labels + helpers
@@ -2382,43 +2542,60 @@ Vide = toutes."></textarea>
   }
 
   // =========================
-  // Copy lines
+  // Copy lines (expanded)
   // =========================
   const LINES = [
     "Un fragment de moins. Silence.",
     "Coup net. Respire.",
     "Ça tombe. Continue.",
     "Propre. Efficace.",
-    "Un pas. Puis un autre."
+    "Un pas. Puis un autre.",
+    "Tu viens de gifler l’entropie.",
+    "Le chaos recule. Il râle un peu.",
+    "Le dossier a cligné des yeux. Mauvaise idée."
   ];
+
   const DONE_POETIC = [
     "Cible dissoute. Place à la suivante.",
     "Fin propre. La charge baisse.",
     "On avance. Sans bruit.",
-    "Un dossier de moins dans l’ombre."
+    "Un dossier de moins dans l’ombre.",
+    "Tu viens de gagner un round contre la flemme.",
+    "La paperasse vient de perdre un bras."
   ];
+
   const DONE_LINES = [
     "CIBLE EXTERMINÉE.",
     "TERMINÉ.",
     "ÉLIMINATION CONFIRMÉE.",
-    "MISSION FINIE."
+    "MISSION FINIE.",
+    "KO. AU SUIVANT.",
+    "VICTOIRE. SANS APPEL."
   ];
+
   const DONE_EPIC = [
     "DÉGOMMAGE MAJEUR.",
     "CIBLE ANNIHILÉE.",
     "EXTERMINATION TOTALE.",
-    "DOSSIER RÉDUIT EN POUSSIÈRE."
+    "DOSSIER RÉDUIT EN POUSSIÈRE.",
+    "FINISHER. L’OBSTACLE EST AU SOL.",
+    "ULTRA-KO ADMINISTRATIF."
   ];
+
   const DONE_EPIC_POETIC = [
     "Ça s’est effondré. Toi, tu restes debout.",
     "La montagne a bougé. Tu l’as faite céder.",
-    "Même l’inertie cligne des yeux."
+    "Même l’inertie cligne des yeux.",
+    "Les trompettes jouent. Personne ne sait d’où elles viennent."
   ];
+
   const FINISH_ALL = [
     "Plus rien à dégommer. Tu es officiellement un ninja administratif.",
     "Mission complète. Champ de bataille nettoyé.",
-    "Silence. Tout est tombé."
+    "Silence. Tout est tombé.",
+    "Tu as vaincu. Le backlog demande un avocat."
   ];
+
   function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
   // =========================
@@ -2427,7 +2604,6 @@ Vide = toutes."></textarea>
   function init(){
     ensureDay();
 
-    // ensure focus exists
     if(state.focusId && !getTask(state.focusId)) state.focusId = null;
     if(!state.focusId){
       const t = pickNext(true);
@@ -2436,7 +2612,7 @@ Vide = toutes."></textarea>
 
     save();
     renderAll();
-    floatSay("Prête. Choisis une cible.");
+    floatSay("Prête. Ouvre le menu. Choisis ta baston.");
   }
 
   init();
@@ -2444,4 +2620,4 @@ Vide = toutes."></textarea>
 })();
 </script>
 </body>
-</html>
+      </html>
