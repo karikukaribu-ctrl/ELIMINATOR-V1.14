@@ -1,0 +1,2447 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>ELIMINATOR</title>
+  <style>
+    :root{
+      --bg:#0f1115;
+      --fg:#e9edf5;
+      --muted:#a8b0bd;
+
+      --panelA: rgba(14,16,24,0.62);
+      --panelB: rgba(10,11,18,0.72);
+
+      --glass: rgba(12,14,22,0.34);
+      --glass2: rgba(12,14,22,0.44);
+
+      --accent1:#f2f2f2;
+      --accent2:#aeb7c7;
+
+      --shadow: 0 18px 60px rgba(0,0,0,0.58);
+      --r: 22px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background: radial-gradient(1200px 600px at 50% 0%, rgba(255,255,255,0.04), transparent 70%), var(--bg);
+      color: var(--fg);
+      overflow-x:hidden;
+    }
+
+    /* ====== App Shell ====== */
+    .shell{
+      min-height:100vh;
+      display:grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 6px;
+    }
+
+    /* Top minimal bar */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 10px 12px;
+      gap:10px;
+    }
+    .topbar .left, .topbar .right{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+
+    /* Buttons: glass, no border */
+    .iconbtn, .btn, .tab{
+      border: none;
+      background: var(--glass);
+      color: var(--fg);
+      border-radius: 14px;
+      padding: 10px 12px;
+      cursor:pointer;
+      font-weight: 950;
+      letter-spacing:0.08em;
+      text-transform: uppercase;
+      font-size: 12px;
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      backdrop-filter: blur(14px) saturate(140%);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+    .iconbtn:hover, .btn:hover, .tab:hover{ background: var(--glass2); }
+    .iconbtn:active, .btn:active, .tab:active{ transform: translateY(1px); }
+    .iconbtn:disabled, .btn:disabled{ opacity:0.5; cursor:not-allowed; }
+
+    /* Chips: glass, no border */
+    .chips{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .chip{
+      display:inline-flex;
+      gap:6px;
+      align-items:center;
+      padding:7px 10px;
+      border-radius: 999px;
+      background: rgba(12,14,22,0.34);
+      color: rgba(255,255,255,0.72);
+      font-size: 12px;
+      font-weight: 950;
+      user-select:none;
+      white-space:nowrap;
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      backdrop-filter: blur(14px) saturate(140%);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.28);
+    }
+    .chip b{ color: rgba(255,255,255,0.92); font-weight: 1000; }
+
+    /* Brand sits under topbar */
+    .hero{
+      display:grid;
+      justify-items:center;
+      gap: 6px;
+      padding: 2px 12px 6px;
+    }
+    .hero h1{
+      margin:0;
+      font-size: clamp(30px, 5.2vw, 56px);
+      font-weight: 1000;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      line-height: 1;
+      text-align:center;
+    }
+    .hero p{
+      margin:0;
+      color: rgba(255,255,255,0.62);
+      font-size: 12px;
+      letter-spacing:0.14em;
+      text-transform: uppercase;
+      text-align:center;
+    }
+
+    /* Floating encouragement (not boxed) */
+    .floatLine{
+      min-height: 18px;
+      padding: 0 12px 4px;
+      text-align:center;
+      color: rgba(255,255,255,0.70);
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: opacity 220ms ease, transform 220ms ease;
+      user-select:none;
+    }
+    .floatLine.show{
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ====== Center ====== */
+    .stage{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 8px 12px 14px;
+    }
+
+    .focusCard{
+      width: min(920px, 96vw);
+      border-radius: var(--r);
+      background:
+        radial-gradient(900px 420px at 50% 0%, rgba(255,255,255,0.10), transparent 62%),
+        linear-gradient(180deg, var(--panelA), var(--panelB));
+      box-shadow: var(--shadow);
+      padding: 16px;
+      display:grid;
+      gap: 14px;
+      -webkit-backdrop-filter: blur(14px) saturate(130%);
+      backdrop-filter: blur(14px) saturate(130%);
+    }
+
+    /* Big global bar (FULL -> decreases) */
+    .barWrap{
+      border-radius: 999px;
+      height: 34px;
+      background: rgba(255,255,255,0.08);
+      overflow:hidden;
+      position:relative;
+    }
+    .barFill{
+      height:100%;
+      width:100%;
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+      transition: width 220ms ease;
+    }
+    .barLabel{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 12px;
+      font-weight: 1000;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(10,12,16,0.92);
+      mix-blend-mode: screen;
+      user-select:none;
+      pointer-events:none;
+    }
+
+    /* Focus task */
+    .target{
+      display:grid;
+      gap: 10px;
+      text-align:center;
+      align-items:center;
+    }
+    .targetTitle{
+      font-size: clamp(22px, 3.8vw, 34px);
+      font-weight: 1000;
+      line-height:1.15;
+      word-break: break-word;
+      padding: 0 6px;
+    }
+    .targetMeta{
+      color: rgba(255,255,255,0.62);
+      font-size: 12px;
+      letter-spacing:0.04em;
+      line-height:1.25;
+      padding: 0 6px;
+    }
+
+    /* Small task bar */
+    .sbarWrap{
+      border-radius: 999px;
+      height: 14px;
+      background: rgba(255,255,255,0.08);
+      overflow:hidden;
+      position:relative;
+    }
+    .sbarFill{
+      height:100%;
+      width:100%;
+      background: linear-gradient(90deg, rgba(242,242,242,0.85), rgba(174,183,199,0.70));
+      transition: width 180ms ease;
+    }
+    .sbarLabel{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 11px;
+      font-weight: 1000;
+      color: rgba(10,12,16,0.90);
+      mix-blend-mode: screen;
+      user-select:none;
+      pointer-events:none;
+    }
+
+    /* Actions row: left Passer, center Roulette, right Dégommer */
+    .actions{
+      display:grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items:center;
+      gap: 12px;
+      margin-top: 2px;
+    }
+    .actions .leftA{ display:flex; justify-content:flex-end; }
+    .actions .centerA{ display:flex; justify-content:center; }
+    .actions .rightA{ display:flex; justify-content:flex-start; }
+
+    .btnRoulette{
+      width: 108px;
+      height: 108px;
+      border-radius: 999px;
+      background:
+        radial-gradient(closest-side, rgba(255,255,255,0.16), rgba(0,0,0,0.06)),
+        linear-gradient(180deg, rgba(12,14,22,0.55), rgba(8,9,14,0.68));
+      color: var(--fg);
+      cursor:pointer;
+      font-weight: 1000;
+      letter-spacing:0.10em;
+      text-transform: uppercase;
+      display:grid;
+      place-items:center;
+      user-select:none;
+      position:relative;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.55);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      backdrop-filter: blur(14px) saturate(140%);
+      border: none;
+    }
+    .btnRoulette .ring{
+      position:absolute; inset:10px;
+      border-radius: 999px;
+      border:1px dashed rgba(255,255,255,0.18);
+      opacity:0.75;
+    }
+    .btnRoulette:hover{ background: rgba(12,14,22,0.62); }
+    .btnRoulette:active{ transform: translateY(1px); }
+
+    .btnRoulette.spinning .ring{ animation: spin 650ms linear infinite; }
+    @keyframes spin{ from{ transform: rotate(0deg);} to{ transform: rotate(360deg);} }
+
+    .btnBig{
+      min-height: 64px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      background:
+        radial-gradient(900px 260px at 30% 20%, rgba(255,255,255,0.12), transparent 60%),
+        linear-gradient(180deg, rgba(12,14,22,0.52), rgba(8,9,14,0.68));
+      font-weight: 1000;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      backdrop-filter: blur(14px) saturate(140%);
+      border:none;
+      color: var(--fg);
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .btnBig:hover{ background: rgba(12,14,22,0.62); }
+
+    /* Subactions */
+    .subActions{
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    /* ====== Drawer ====== */
+    .overlay{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,0.60);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity 160ms ease;
+      z-index: 90;
+    }
+    .overlay.show{ opacity:1; pointer-events:auto; }
+
+    .drawer{
+      position:fixed;
+      top:0; left:0;
+      height:100vh;
+      width: min(600px, 92vw);
+      background:
+        radial-gradient(900px 420px at 40% 0%, rgba(255,255,255,0.10), transparent 62%),
+        linear-gradient(180deg, rgba(14,16,24,0.74), rgba(9,10,16,0.82));
+      transform: translateX(-110%);
+      transition: transform 180ms ease;
+      z-index: 100;
+      display:grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 12px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+      -webkit-backdrop-filter: blur(14px) saturate(130%);
+      backdrop-filter: blur(14px) saturate(130%);
+    }
+    .drawer.show{ transform: translateX(0); }
+
+    .drawerHeader{
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+    }
+    .drawerHeader .h{
+      font-weight: 1000;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-size: 12px;
+      color: rgba(255,255,255,0.65);
+    }
+
+    .tabs{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .tab.active{ background: rgba(12,14,22,0.52); }
+
+    .drawerBody{
+      overflow:auto;
+      padding-right: 4px;
+      display:grid;
+      gap: 12px;
+      align-content:start;
+    }
+
+    .card{
+      border-radius: 18px;
+      background: rgba(12,14,22,0.30);
+      padding: 12px;
+      display:grid;
+      gap:10px;
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      backdrop-filter: blur(14px) saturate(140%);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.28);
+    }
+    .cardTitle{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      color: rgba(255,255,255,0.62);
+      font-weight: 1000;
+      letter-spacing:0.14em;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+
+    textarea, select, input[type="text"], input[type="number"]{
+      font:inherit;
+      border:none;
+      background: rgba(0,0,0,0.18);
+      color: var(--fg);
+      border-radius: 14px;
+      padding: 10px 12px;
+      outline:none;
+      font-size:13px;
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      backdrop-filter: blur(14px) saturate(140%);
+    }
+    textarea{ width:100%; min-height: 140px; resize: vertical; line-height:1.35; }
+
+    .rowBtns{
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+
+    /* Lists */
+    .list{ display:grid; gap:8px; }
+
+    .trow{
+      border-radius: 16px;
+      background: rgba(0,0,0,0.14);
+      padding: 10px;
+      display:grid;
+      gap:8px;
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      backdrop-filter: blur(14px) saturate(140%);
+    }
+
+    .trowTop{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .tname{
+      font-weight: 950;
+      font-size: 14px;
+      line-height:1.2;
+      word-break: break-word;
+    }
+    .tmini{
+      color: rgba(255,255,255,0.62);
+      font-size: 12px;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      line-height:1.15;
+    }
+    .tacts{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      align-items:center;
+    }
+    .done{ text-decoration: line-through; opacity:0.55; }
+
+    .sbarMiniWrap{
+      border-radius: 999px;
+      height: 12px;
+      background: rgba(255,255,255,0.08);
+      overflow:hidden;
+      position:relative;
+    }
+    .sbarMiniFill{
+      height:100%;
+      background: linear-gradient(90deg, rgba(242,242,242,0.78), rgba(174,183,199,0.62));
+      transition: width 180ms ease;
+    }
+
+    details{
+      border-radius: 18px;
+      overflow:hidden;
+      background: rgba(12,14,22,0.22);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      backdrop-filter: blur(14px) saturate(140%);
+    }
+    summary{
+      cursor:pointer;
+      padding: 10px 12px;
+      color: rgba(255,255,255,0.62);
+      font-weight: 1000;
+      letter-spacing:0.14em;
+      text-transform: uppercase;
+      font-size: 11px;
+      user-select:none;
+      list-style:none;
+    }
+    details > .inside{
+      padding: 10px 12px 12px;
+      display:grid;
+      gap:10px;
+    }
+
+    /* Toast + FX */
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom: 14px;
+      transform: translateX(-50%);
+      background: rgba(11,13,18,0.74);
+      border:none;
+      border-radius: 14px;
+      padding: 12px 14px;
+      color: var(--fg);
+      font-size: 13px;
+      opacity:0;
+      pointer-events:none;
+      transition: opacity 160ms ease, transform 160ms ease;
+      max-width: min(900px, calc(100vw - 24px));
+      box-shadow: var(--shadow);
+      white-space:pre-wrap;
+      z-index: 120;
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      backdrop-filter: blur(14px) saturate(140%);
+    }
+    .toast.show{
+      opacity:1;
+      transform: translateX(-50%) translateY(-6px);
+    }
+
+    canvas#fx{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index: 110;
+    }
+
+    /* Hint is minimal */
+    .hint{
+      text-align:center;
+      color: rgba(255,255,255,0.55);
+      font-size: 12px;
+      line-height:1.25;
+      padding: 6px 12px 14px;
+      opacity:0.95;
+    }
+
+    /* Responsive */
+    @media (max-width: 520px){
+      .btnRoulette{ width: 100px; height: 100px; }
+      .btnBig{ min-height: 60px; padding: 14px 16px; }
+      .actions{ grid-template-columns: 1fr auto 1fr; gap: 10px; }
+      .focusCard{ padding: 14px; }
+      .barWrap{ height: 32px; }
+    }
+    @media (max-width: 380px){
+      .actions{ grid-template-columns: 1fr; }
+      .actions .leftA, .actions .centerA, .actions .rightA{ justify-content:center; }
+      .btnBig{ width: 92vw; }
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="fx"></canvas>
+
+  <div class="shell">
+    <div class="topbar" id="topbar">
+      <div class="left">
+        <button class="iconbtn" id="btnMenu" aria-label="Menu">Menu</button>
+        <button class="iconbtn" id="btnNewDay">Nouveau jour</button>
+      </div>
+
+      <div class="right chips" aria-label="Compteurs">
+        <span class="chip">Départ <b id="startTasks">0</b></span>
+        <span class="chip">Reste <b id="leftTasks">0</b></span>
+        <span class="chip">ETHORION <b id="leftEth">0</b>/<b id="startEth">0</b></span>
+        <span class="chip">Éliminé <b id="elimEth">0</b></span>
+        <span class="chip">Tâches <b id="doneTasks">0</b>/<b id="startTasks2">0</b></span>
+      </div>
+    </div>
+
+    <header class="hero">
+      <h1>ELIMINATOR</h1>
+      <p>Dégommez-les tous</p>
+    </header>
+
+    <div class="floatLine" id="floatLine"> </div>
+
+    <div class="stage">
+      <section class="focusCard" aria-label="Focus">
+
+        <!-- BIG GLOBAL BAR -->
+        <div class="barWrap" aria-label="Progression globale">
+          <div class="barFill" id="gFill"></div>
+          <div class="barLabel" id="gLabel">100%</div>
+        </div>
+
+        <div class="target" aria-label="Cible">
+          <div class="targetTitle" id="focusTitle">CIBLE EN COURS DE RECHERCHE</div>
+          <div class="targetMeta" id="focusMeta">—</div>
+
+          <div class="chips" style="justify-content:center;">
+            <span class="chip">ETHORION <b id="focusEth">0</b></span>
+            <span class="chip">P <b id="focusPrio">—</b></span>
+            <span class="chip">Énergie <b id="focusEnergy">—</b></span>
+            <span class="chip">Mode <b id="focusMode">—</b></span>
+          </div>
+
+          <!-- SMALL TASK BAR -->
+          <div class="sbarWrap" aria-label="Progression tâche">
+            <div class="sbarFill" id="tFill"></div>
+            <div class="sbarLabel" id="tLabel">100%</div>
+          </div>
+
+          <div class="actions" aria-label="Actions">
+            <div class="leftA">
+              <button class="btnBig" id="btnSkip" aria-label="Passer">Passer</button>
+            </div>
+
+            <div class="centerA">
+              <button class="btnRoulette" id="btnRoulette" aria-label="Roulette">
+                <span class="ring"></span>
+                Roulette
+              </button>
+            </div>
+
+            <div class="rightA">
+              <button class="btnBig" id="btnDego" aria-label="Dégommer">Dégommer 1 ETHORION</button>
+            </div>
+          </div>
+
+          <div class="subActions">
+            <button class="btn" id="btnNotes">Notes</button>
+            <button class="btn" id="btnDone">Terminer</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="hint">
+      Import : colle n’importe quel texte multi-lignes. Les lignes finissant par “:” sont des catégories. Le reste = tâches.
+      Raccourci : Ctrl/⌘+Enter pour ajouter depuis Inbox.
+    </div>
+  </div>
+
+  <!-- Drawer -->
+  <div class="overlay" id="overlay"></div>
+  <aside class="drawer" id="drawer" aria-label="Menu latéral">
+    <div class="drawerHeader">
+      <div class="h">Menu</div>
+      <button class="btn" id="btnClose">Fermer</button>
+    </div>
+
+    <div class="tabs" id="tabs"></div>
+    <div class="drawerBody" id="drawerBody"></div>
+
+    <div class="rowBtns">
+      <button class="btn" id="btnUndo">Undo</button>
+      <button class="btn" id="btnRedo">Redo</button>
+    </div>
+  </aside>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  // =========================
+  // Storage + State
+  // =========================
+  const LS_KEY = "eliminator_app_v3";
+  const MAX_HISTORY = 50;
+
+  const el = (id)=>document.getElementById(id);
+  const now = ()=>Date.now();
+  const clamp = (n,a,b)=>Math.max(a, Math.min(b,n));
+  const uid = ()=> Math.random().toString(36).slice(2,10)+"-"+Date.now().toString(36);
+
+  // Top counters
+  const startTasksEl  = el("startTasks");
+  const startTasks2El = el("startTasks2");
+  const leftTasksEl   = el("leftTasks");
+  const startEthEl    = el("startEth");
+  const leftEthEl     = el("leftEth");
+  const elimEthEl     = el("elimEth");
+  const doneTasksEl   = el("doneTasks");
+
+  // Bars
+  const gFill = el("gFill");
+  const gLabel = el("gLabel");
+  const tFill = el("tFill");
+  const tLabel = el("tLabel");
+
+  // Focus
+  const focusTitle = el("focusTitle");
+  const focusMeta = el("focusMeta");
+  const focusEth = el("focusEth");
+  const focusPrio = el("focusPrio");
+  const focusEnergy = el("focusEnergy");
+  const focusMode = el("focusMode");
+
+  // Float line
+  const floatLine = el("floatLine");
+
+  // Buttons
+  const btnMenu = el("btnMenu");
+  const btnNewDay = el("btnNewDay");
+  const btnRoulette = el("btnRoulette");
+  const btnDego = el("btnDego");
+  const btnNotes = el("btnNotes");
+  const btnDone = el("btnDone");
+  const btnSkip = el("btnSkip");
+
+  // Drawer
+  const overlay = el("overlay");
+  const drawer = el("drawer");
+  const btnClose = el("btnClose");
+  const tabs = el("tabs");
+  const drawerBody = el("drawerBody");
+  const btnUndo = el("btnUndo");
+  const btnRedo = el("btnRedo");
+
+  // Toast + FX
+  const toast = el("toast");
+  const fxCanvas = el("fx");
+  const fx = fxCanvas.getContext("2d");
+
+  // =========================
+  // Day helper
+  // =========================
+  function isoDay(d = new Date()){
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const da = String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${da}`;
+  }
+
+  // =========================
+  // Default State
+  // =========================
+  function initial(){
+    const today = isoDay();
+    return {
+      version: 3,
+      day: {
+        id: today,
+        startTasks: 0,
+        startEth: 0
+      },
+      focusId: null,
+
+      // energy: 1 low, 2 medium, 3 high
+      energyProfile: { level: 2, motivation: 2 }, // 1..3
+
+      // mode selection
+      mode: {
+        pick: "roulette",    // "roulette" | "order"
+        orderBy: "prio",     // "alpha" | "chrono" | "cat" | "prio" | "eth"
+        includeCats: []      // empty => all
+      },
+
+      ui: { activeTab: "inbox", sort: "order" },
+
+      tasks: [],
+
+      // prebuilt sets (editable)
+      sets: [
+        {
+          id: "set_u74_adm",
+          name: "Unité 74 — Admission (5)",
+          lines: [
+            "PATIENTS:",
+            "Patient 1 — 4 ethorions — importance 3",
+            "Patient 2 — 4 ethorions — importance 3",
+            "Patient 3 — 4 ethorions — importance 3",
+            "Patient 4 — 4 ethorions — importance 3",
+            "Patient 5 — 4 ethorions — importance 3",
+            "ENCODAGE:",
+            "Encoder la note Patient 1 — 2 ethorions — importance 2",
+            "Encoder la note Patient 2 — 2 ethorions — importance 2",
+            "Encoder la note Patient 3 — 2 ethorions — importance 2",
+            "Encoder la note Patient 4 — 2 ethorions — importance 2",
+            "Encoder la note Patient 5 — 2 ethorions — importance 2"
+          ]
+        },
+        {
+          id: "set_u74_sortie",
+          name: "Unité 74 — Sortie (5)",
+          lines: [
+            "PATIENTS:",
+            "Patient 1 — 3 ethorions — importance 3",
+            "Patient 2 — 3 ethorions — importance 3",
+            "Patient 3 — 3 ethorions — importance 3",
+            "Patient 4 — 3 ethorions — importance 3",
+            "Patient 5 — 3 ethorions — importance 3",
+            "ENCODAGE:",
+            "Encoder la note Patient 1 — 2 ethorions — importance 2",
+            "Encoder la note Patient 2 — 2 ethorions — importance 2",
+            "Encoder la note Patient 3 — 2 ethorions — importance 2",
+            "Encoder la note Patient 4 — 2 ethorions — importance 2",
+            "Encoder la note Patient 5 — 2 ethorions — importance 2"
+          ]
+        },
+        {
+          id: "set_consult_6",
+          name: "Consultations (6)",
+          lines: [
+            "CONSULTATIONS:",
+            "Voir patient 1 — 4 ethorions — importance 3",
+            "Voir patient 2 — 4 ethorions — importance 3",
+            "Voir patient 3 — 4 ethorions — importance 3",
+            "Voir patient 4 — 4 ethorions — importance 3",
+            "Voir patient 5 — 4 ethorions — importance 3",
+            "Voir patient 6 — 4 ethorions — importance 3",
+            "NOTES:",
+            "Faire la note patient 1 — 3 ethorions — importance 2",
+            "Faire la note patient 2 — 3 ethorions — importance 2",
+            "Faire la note patient 3 — 3 ethorions — importance 2",
+            "Faire la note patient 4 — 3 ethorions — importance 2",
+            "Faire la note patient 5 — 3 ethorions — importance 2",
+            "Faire la note patient 6 — 3 ethorions — importance 2"
+          ]
+        },
+        {
+          id: "set_daily_starter",
+          name: "Starter quotidien",
+          lines: [
+            "ORGANISATION:",
+            "Vérifier l’horaire + adapter planning — 6 ethorions — importance 3",
+            "Emails rapides — 2 ethorions — importance 2",
+            "Appels indispensables — 2 ethorions — importance 2",
+            "Un dossier lourd (1) — 10 ethorions — importance 3"
+          ]
+        }
+      ],
+
+      // Global notes (persist)
+      scratch: "",
+
+      history: { undo: [], redo: [] },
+      events: [] // visible log
+    };
+  }
+
+  let state = load() || initial();
+
+  function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      if(!raw) return null;
+      const obj = JSON.parse(raw);
+      if(!obj || !Array.isArray(obj.tasks)) return null;
+
+      // migrations
+      if(!obj.sets) obj.sets = initial().sets;
+      if(!obj.history) obj.history = {undo:[], redo:[]};
+      if(!obj.events) obj.events = [];
+      if(!obj.energyProfile) obj.energyProfile = {level:2, motivation:2};
+      if(!obj.mode) obj.mode = {pick:"roulette", orderBy:"prio", includeCats:[]};
+      if(!Array.isArray(obj.mode.includeCats)) obj.mode.includeCats = [];
+      if(!obj.ui) obj.ui = {activeTab:"inbox", sort:"order"};
+      if(!obj.day) obj.day = initial().day;
+      if(typeof obj.scratch !== "string") obj.scratch = "";
+      return obj;
+    }catch{ return null; }
+  }
+
+  // =========================
+  // History (undo/redo) + visible log
+  // =========================
+  function snapshot(){
+    const s = structuredClone({...state});
+    s.history = {undo:[], redo:[]};
+    return s;
+  }
+
+  function logEvent(text){
+    state.events.push({ t: now(), text: String(text).slice(0,220) });
+    state.events = state.events.slice(-250);
+  }
+
+  function pushHistory(label){
+    state.history.undo.push(snapshot());
+    if(state.history.undo.length > MAX_HISTORY) state.history.undo.shift();
+    state.history.redo = [];
+    if(label) logEvent(label);
+    save();
+    updateUndoRedo();
+  }
+
+  function undo(){
+    if(!state.history.undo.length) return;
+    const prev = state.history.undo.pop();
+    const cur = snapshot();
+    state.history.redo.push(cur);
+    const keep = state.history;
+    state = {...prev, history: keep};
+    save();
+    renderAll();
+  }
+
+  function redo(){
+    if(!state.history.redo.length) return;
+    const next = state.history.redo.pop();
+    const cur = snapshot();
+    state.history.undo.push(cur);
+    const keep = state.history;
+    state = {...next, history: keep};
+    save();
+    renderAll();
+  }
+
+  function updateUndoRedo(){
+    btnUndo.disabled = state.history.undo.length===0;
+    btnRedo.disabled = state.history.redo.length===0;
+  }
+
+  // =========================
+  // Parsing (tolerant)
+  // =========================
+  function cleanLine(s){
+    let x = String(s||"").trim();
+    // remove weird separators, keep text
+    x = x.replace(/[|¦]+/g," ").replace(/\s{2,}/g," ").trim();
+    return x;
+  }
+
+  function isCategoryLine(line){
+    const s = String(line||"").trim();
+    if(!s) return false;
+    if(/:\s*$/.test(s)) return true;                // ends with :
+    if(/^[A-ZÀ-ÖØ-Ý0-9\s/]+$/.test(s) && s.length <= 40) return true; // short uppercase header
+    return false;
+  }
+
+  function parseEthorion(text){
+    const t = text.toLowerCase();
+    const m = t.match(/(\d{1,3})\s*(?:ethorion|ethorions|eth)\b/);
+    if(m) return clamp(parseInt(m[1],10)||1, 1, 200);
+    // allow "torion/torions" as legacy
+    const m2 = t.match(/(\d{1,3})\s*(?:torion|torions)\b/);
+    if(m2) return clamp(parseInt(m2[1],10)||1, 1, 200);
+    return null;
+  }
+
+  function parseMinutes(text){
+    const t = text.toLowerCase();
+    const m = t.match(/(\d{1,3})\s*(?:minutes|minute|min)\b/);
+    if(m) return clamp(parseInt(m[1],10)||0, 1, 999);
+    return null;
+  }
+
+  function parseImportance(text){
+    const t = text.toLowerCase();
+    const m = t.match(/\b(?:importance|prio|priorité)\s*(\d)\b/);
+    if(m) return clamp(parseInt(m[1],10)||2, 1, 3);
+    return null;
+  }
+
+  function removeMetaFromTitle(raw){
+    // normalize long dashes
+    let x = raw.replace(/\s*[—–]\s*/g, " — ");
+    // remove common meta chunks
+    x = x.replace(/\b\d+\s*(ethorion|ethorions|eth|torion|torions)\b/gi, "");
+    x = x.replace(/\b\d+\s*(minutes|minute|min)\b/gi, "");
+    x = x.replace(/\b(importance|prio|priorité)\s*\d\b/gi, "");
+    x = x.replace(/\b(fait|done)\b/gi, "");
+    x = x.replace(/\s{2,}/g," ").trim();
+    // if still contains separators, keep left part as title
+    const parts = x.split("—").map(s=>s.trim()).filter(Boolean);
+    return (parts[0] || x).trim();
+  }
+
+  function inferEnergyFromText(title, category){
+    const t = (title+" "+(category||"")).toLowerCase();
+    // low energy tasks
+    if(/\b(appeler|tél|tel|téléphone|mail|email|répondre|encoder|encodage|note)\b/.test(t)) return 1;
+    // high energy tasks
+    if(/\b(rapport|rédaction|dossier|analyse|attestation|procédure)\b/.test(t)) return 3;
+    return 2;
+  }
+
+  function parsePasted(raw){
+    const lines = String(raw||"").split(/\r?\n/).map(cleanLine).filter(Boolean);
+    let currentCategory = "Sans catégorie";
+    const out = [];
+
+    for(const line0 of lines){
+      const line = line0.trim();
+      if(!line) continue;
+
+      // explicit category header
+      if(isCategoryLine(line)){
+        currentCategory = line.replace(/:+$/,"").trim() || currentCategory;
+        continue;
+      }
+
+      // treat any line as a task (tolerant)
+      const eth = parseEthorion(line) ?? defaultEthFromEnergyHint(line, currentCategory);
+      const minutes = parseMinutes(line);
+      const prio = parseImportance(line) ?? 2;
+      const title = cleanLine(removeMetaFromTitle(line));
+
+      // ignore if title is empty
+      if(!title) continue;
+
+      out.push({
+        title,
+        category: currentCategory,
+        ethorionTotal: eth,
+        ethorionRemaining: eth,
+        minutesHint: minutes || null,
+        priority: prio,
+        energyTag: inferEnergyFromText(title, currentCategory)
+      });
+    }
+    return out;
+  }
+
+  function defaultEthFromEnergyHint(line, cat){
+    // if user didn't specify ethorion:
+    // calls/emails default 1-2; reports default 10; otherwise 3
+    const t = (line+" "+(cat||"")).toLowerCase();
+    if(/\b(appeler|tél|tel|téléphone|répondre|mail|email)\b/.test(t)) return 2;
+    if(/\b(rapport|dossier|attestation)\b/.test(t)) return 10;
+    return 3;
+  }
+
+  // =========================
+  // Day baseline
+  // =========================
+  function ensureDay(){
+    const today = isoDay();
+    if(state.day.id !== today){
+      state.day.id = today;
+      state.day.startTasks = 0;
+      state.day.startEth = 0;
+    }
+    if(state.day.startTasks===0 && state.day.startEth===0){
+      setDayBaseline("Départ fixé");
+    }
+  }
+
+  function setDayBaseline(label){
+    const active = state.tasks.filter(t=>!t.done);
+    state.day.startTasks = active.length;
+    state.day.startEth = active.reduce((a,t)=>a + (t.ethorionRemaining||0), 0);
+    logEvent(label || "Départ fixé");
+    save();
+  }
+
+  function newDay(){
+    pushHistory("Nouveau jour");
+    setDayBaseline("Nouveau jour");
+    renderAll();
+    showToast("Nouveau jour.", 1800);
+    floatSay("Nouveau terrain. Nouvelle chasse.");
+  }
+
+  // =========================
+  // Tasks helpers
+  // =========================
+  function nextOrder(){
+    const act = state.tasks.filter(t=>!t.done);
+    if(!act.length) return 1;
+    return Math.max(...act.map(t=>t.order||0)) + 1;
+  }
+
+  function addTasksFromText(raw){
+    const parsed = parsePasted(raw);
+    if(!parsed.length){
+      showToast("Rien à ajouter.", 1800);
+      floatSay("Aucun fragment détecté. Recharge la matière.");
+      return;
+    }
+    pushHistory(`Ajout ${parsed.length} tâche(s)`);
+
+    const start = nextOrder();
+    parsed.forEach((p,i)=>{
+      state.tasks.push({
+        id: uid(),
+        title: p.title,
+        category: p.category,
+        ethorionTotal: p.ethorionTotal,
+        ethorionRemaining: p.ethorionRemaining,
+        minutesHint: p.minutesHint,
+        priority: p.priority,
+        energyTag: p.energyTag,
+        notes: "",
+        done: false,
+        order: start+i,
+        createdAt: now(),
+        doneAt: null
+      });
+    });
+
+    ensureDay();
+    if(!state.focusId){
+      const t = pickNext();
+      if(t) state.focusId = t.id;
+    }
+
+    save();
+    renderAll();
+    showToast("Ajouté.", 1400);
+    floatSay("Cibles chargées.");
+  }
+
+  function getTask(id){ return state.tasks.find(t=>t.id===id) || null; }
+
+  function setFocus(id){
+    state.focusId = id;
+    save();
+    renderFocus();
+  }
+
+  function finishTask(taskId, opts={}){
+    const t = getTask(taskId);
+    if(!t) return;
+
+    if(!opts.silent) pushHistory("Terminer tâche");
+
+    t.done = true;
+    t.doneAt = now();
+    t.ethorionRemaining = 0;
+
+    // Celebration scales with size
+    const big = (t.ethorionTotal||0) >= 10;
+    const epicChance = big ? 0.55 : 0.15;
+    const epic = Math.random() < epicChance;
+
+    if(epic){
+      confetti(2.8);
+      boom(1100);
+      showToast(pick(DONE_EPIC), 4200);
+      floatSay(pick(DONE_EPIC_POETIC), 4400);
+    }else{
+      confetti(1.4);
+      flash();
+      showToast(pick(DONE_LINES), 2800);
+      floatSay(pick(DONE_POETIC), 3200);
+    }
+
+    const next = pickNext();
+    state.focusId = next ? next.id : null;
+
+    save();
+    renderAll();
+
+    if(!state.focusId && countActiveTasks()===0){
+      // end of all tasks
+      setTimeout(()=>{
+        confetti(3.4);
+        boom(1800);
+        floatSay(pick(FINISH_ALL), 5200);
+        showToast("MISSION TOTALE TERMINÉE.", 5200);
+      }, 250);
+    }
+  }
+
+  function degoOne(){
+    const t = getTask(state.focusId);
+    if(!t){
+      showToast("CIBLE EN COURS DE RECHERCHE", 1600);
+      floatSay("Radar en balayage…");
+      return;
+    }
+
+    pushHistory("Dégommage");
+    t.ethorionRemaining = Math.max(0, (t.ethorionRemaining||0) - 1);
+
+    // small celebration only on each fragment
+    if(Math.random() < 0.35){
+      confetti(0.9);
+    }
+    flashSoft();
+    floatSay(pick(LINES), 2600);
+
+    if(t.ethorionRemaining===0){
+      finishTask(t.id, {silent:true});
+      return;
+    }
+
+    save();
+    renderAll();
+  }
+
+  function skip(){
+    const next = pickNext(true);
+    state.focusId = next ? next.id : null;
+    save();
+    renderAll();
+    showToast(next ? "CIBLE REPLACÉE." : "PLUS DE CIBLES.", 1600);
+    floatSay(next ? "Changement de cible." : pick(FINISH_ALL), 2400);
+  }
+
+  function deleteTask(taskId){
+    if(!confirm("Supprimer ?")) return;
+    pushHistory("Supprimer tâche");
+    if(state.focusId === taskId) state.focusId = null;
+    state.tasks = state.tasks.filter(x=>x.id!==taskId);
+    save();
+    renderAll();
+  }
+
+  function duplicateTask(taskId){
+    const t = getTask(taskId);
+    if(!t) return;
+    pushHistory("Dupliquer tâche");
+    const c = structuredClone(t);
+    c.id = uid();
+    c.done = false;
+    c.doneAt = null;
+    c.ethorionRemaining = c.ethorionTotal;
+    c.order = nextOrder();
+    c.createdAt = now();
+    state.tasks.push(c);
+    save();
+    renderAll();
+    showToast("Dupliqué.", 1400);
+  }
+
+  function setEthorion(taskId){
+    const t = getTask(taskId);
+    if(!t || t.done) return;
+    const val = prompt("ETHORION total ?", String(t.ethorionTotal||3));
+    if(val===null) return;
+
+    pushHistory("Régler ethorion");
+    const n = clamp(parseInt(val,10)||t.ethorionTotal||3, 1, 200);
+
+    const wasTotal = Math.max(1, t.ethorionTotal||1);
+    const wasRem = clamp(t.ethorionRemaining||0, 0, wasTotal);
+    const ratio = wasTotal ? (wasRem/wasTotal) : 1;
+
+    t.ethorionTotal = n;
+    t.ethorionRemaining = clamp(Math.round(n*ratio), 0, n);
+    if(t.ethorionRemaining===0) t.ethorionRemaining = Math.min(1,n);
+
+    save();
+    renderAll();
+    showToast("OK", 1200);
+  }
+
+  // =========================
+  // Pool + Mode picks
+  // =========================
+  function getActivePool(){
+    const base = state.tasks.filter(t=>!t.done && (t.ethorionRemaining||0) > 0);
+    const sel = state.mode?.includeCats || [];
+    if(!sel.length) return base;
+    const set = new Set(sel);
+    return base.filter(t => set.has(t.category || "Sans catégorie"));
+  }
+
+  function pickOrderedTask(){
+    const pool = getActivePool();
+    if(!pool.length) return null;
+
+    const by = state.mode?.orderBy || "prio";
+    const arr = pool.slice();
+
+    if(by === "alpha"){
+      arr.sort((a,b)=> (a.title||"").localeCompare(b.title||"", "fr"));
+    } else if(by === "chrono"){
+      arr.sort((a,b)=> (a.createdAt||0) - (b.createdAt||0)); // old -> new
+    } else if(by === "cat"){
+      arr.sort((a,b)=> (a.category||"").localeCompare(b.category||"", "fr") || (a.title||"").localeCompare(b.title||"", "fr"));
+    } else if(by === "eth"){
+      arr.sort((a,b)=> (b.ethorionRemaining||0) - (a.ethorionRemaining||0));
+    } else { // prio default
+      arr.sort((a,b)=> (b.priority||2)-(a.priority||2) || (a.order||0)-(b.order||0));
+    }
+
+    return arr[0];
+  }
+
+  function pickNext(allowSame=false){
+    if(state.mode?.pick === "order"){
+      const t = pickOrderedTask();
+      return t;
+    }
+    return pickEnergyRoulette(allowSame);
+  }
+
+  // =========================
+  // Energy-based Roulette
+  // =========================
+  function energyCaps(level){
+    // Rules:
+    // - energy 1 (low): mostly <=1, sometimes 2-3, almost never >3
+    // - energy 2 (medium): mostly 1-4, sometimes 5-8, rarely >8
+    // - energy 3 (high): anything, still prefers priority & progress
+    if(level===1) return { softMax: 1, rareMax: 3, rareProb: 0.22, hardMaxProb: 0.03, hardMax: 999 };
+    if(level===2) return { softMax: 4, rareMax: 8, rareProb: 0.25, hardMaxProb: 0.08, hardMax: 16 };
+    return { softMax: 8, rareMax: 16, rareProb: 0.28, hardMaxProb: 0.18, hardMax: 999 };
+  }
+
+  function pickEnergyRoulette(allowSame=false){
+    const pool0 = getActivePool();
+    if(!pool0.length) return null;
+
+    const E = clamp(state.energyProfile.level||2, 1, 3);      // 1..3
+    const M = clamp(state.energyProfile.motivation||2, 1, 3); // 1..3
+    const caps = energyCaps(E);
+
+    // Filter pool based on energy rules (soft + rare + hard)
+    const pool = pool0.filter(t=>{
+      const rem = Math.max(1, Math.ceil(t.ethorionRemaining||1));
+      if(rem <= caps.softMax) return true;
+
+      // rare window
+      if(rem <= caps.rareMax) return Math.random() < caps.rareProb;
+
+      // hard window (only if allowed for that energy)
+      if(rem <= caps.hardMax) return Math.random() < caps.hardMaxProb;
+
+      return false;
+    });
+
+    const finalPool = pool.length ? pool : pool0; // never get stuck
+
+    // Weighted pick: priority + fit energyTag + motivation prefers short when low motivation
+    const weights = finalPool.map(t=>{
+      const rem = Math.max(1, Math.ceil(t.ethorionRemaining||1));
+      const pr = (t.priority===3? 3 : t.priority===2? 2 : 1);
+
+      // energyTag fit
+      let fit = 1.0;
+      if(E===1){
+        fit *= (t.energyTag===1 ? 1.60 : t.energyTag===2 ? 0.95 : 0.55);
+      } else if(E===2){
+        fit *= (t.energyTag===1 ? 1.12 : t.energyTag===2 ? 1.25 : 0.98);
+      } else {
+        fit *= (t.energyTag===3 ? 1.30 : 1.06);
+      }
+
+      // motivation biases towards shorter if motivation low
+      let mot = 1.0;
+      if(M===1){
+        mot *= (rem<=2 ? 1.55 : rem<=4 ? 1.10 : 0.70);
+      } else if(M===2){
+        mot *= (rem<=3 ? 1.18 : 1.0);
+      } else {
+        mot *= 1.0;
+      }
+
+      // gentle "progress" factor: prefer tasks already in motion
+      const total = Math.max(1, t.ethorionTotal||1);
+      const doneFrac = (total - (t.ethorionRemaining||0)) / total; // 0..1
+      const progressBoost = 1.0 + (doneFrac * 0.25);
+
+      // slight penalty for very long tasks when low energy
+      const longPenalty = (E===1 && rem>3) ? 0.65 : (E===2 && rem>8) ? 0.80 : 1.0;
+
+      return Math.max(0.2, rem * pr * fit * mot * progressBoost * longPenalty);
+    });
+
+    // Avoid re-picking same focus too often if asked
+    let candidate = weightedPick(finalPool, weights);
+    if(!allowSame && state.focusId && candidate && candidate.id === state.focusId && finalPool.length > 1){
+      // try one re-roll
+      candidate = weightedPick(finalPool, weights);
+    }
+    return candidate;
+  }
+
+  function weightedPick(items, weights){
+    const total = weights.reduce((a,b)=>a+b,0);
+    let r = Math.random()*total;
+    for(let i=0;i<items.length;i++){
+      r -= weights[i];
+      if(r<=0) return items[i];
+    }
+    return items[items.length-1];
+  }
+
+  // Roulette suspense (visual spin only)
+  let rouletteLock = false;
+  function roulette(){
+    if(rouletteLock) return;
+    rouletteLock = true;
+    btnRoulette.disabled = true;
+    btnRoulette.classList.add("spinning");
+
+    const suspense = 520 + Math.floor(Math.random()*260);
+
+    setTimeout(()=>{
+      const t = pickNext();
+      if(t){
+        state.focusId = t.id;
+        floatSay("Cible verrouillée.");
+        showToast("CIBLE VERROUILLÉE.", 1600);
+      }else{
+        state.focusId = null;
+        showToast("PLUS DE CIBLES.", 1600);
+        floatSay(pick(FINISH_ALL), 2600);
+      }
+
+      btnRoulette.disabled = false;
+      btnRoulette.classList.remove("spinning");
+      rouletteLock = false;
+
+      save();
+      renderAll();
+    }, suspense);
+  }
+
+  // =========================
+  // Sorting (for list view only)
+  // =========================
+  function getActiveSorted(){
+    const items = state.tasks.filter(t=>!t.done);
+    const sort = state.ui.sort || "order";
+    if(sort==="prio"){
+      items.sort((a,b)=>(b.priority||2)-(a.priority||2) || (a.order||0)-(b.order||0));
+    }else if(sort==="eth"){
+      items.sort((a,b)=>(b.ethorionRemaining||0)-(a.ethorionRemaining||0) || (b.priority||2)-(a.priority||2));
+    }else if(sort==="cat"){
+      items.sort((a,b)=> (a.category||"").localeCompare(b.category||"", "fr") || (a.order||0)-(b.order||0));
+    }else{
+      items.sort((a,b)=>(a.order||0)-(b.order||0));
+    }
+    return items;
+  }
+
+  function applyOrderFromList(ids){
+    let k = 1;
+    ids.forEach(id=>{
+      const t = getTask(id);
+      if(t && !t.done) t.order = k++;
+    });
+  }
+
+  // =========================
+  // Rendering
+  // =========================
+  function sumActiveEth(){
+    return state.tasks.reduce((a,t)=>a + (t.done?0:(t.ethorionRemaining||0)), 0);
+  }
+  function countActiveTasks(){
+    return state.tasks.filter(t=>!t.done).length;
+  }
+  function countDoneTasks(){
+    return state.tasks.filter(t=>t.done).length;
+  }
+
+  function renderCounters(){
+    ensureDay();
+
+    const leftTasks = countActiveTasks();
+    const leftEth = sumActiveEth();
+    const doneTasks = countDoneTasks();
+
+    const startT = state.day.startTasks || leftTasks;
+    const startE = state.day.startEth || leftEth;
+
+    const elimEth = Math.max(0, startE - leftEth);
+
+    startTasksEl.textContent  = String(startT);
+    startTasks2El.textContent = String(startT);
+    leftTasksEl.textContent   = String(leftTasks);
+    startEthEl.textContent    = String(startE);
+    leftEthEl.textContent     = String(leftEth);
+    elimEthEl.textContent     = String(elimEth);
+    doneTasksEl.textContent   = String(doneTasks);
+
+    const denom = Math.max(1, startE);
+    const pctLeft = clamp(Math.round((leftEth/denom)*100), 0, 100);
+    gFill.style.width = `${pctLeft}%`;
+    gLabel.textContent = `${pctLeft}%`;
+
+    updateUndoRedo();
+  }
+
+  function renderFocus(){
+    const t = getTask(state.focusId);
+
+    focusMode.textContent = (state.mode?.pick === "order") ? "ordre" : "roulette";
+    focusEnergy.textContent = energyLabel(state.energyProfile.level);
+
+    if(!t){
+      focusTitle.textContent = "CIBLE EN COURS DE RECHERCHE";
+      focusMeta.textContent = "—";
+      focusEth.textContent = "0";
+      focusPrio.textContent = "—";
+
+      tFill.style.width = "100%";
+      tLabel.textContent = "100%";
+
+      btnDego.disabled = true;
+      btnNotes.disabled = true;
+      btnDone.disabled = true;
+      btnSkip.disabled = false;
+      return;
+    }
+
+    focusTitle.textContent = t.title;
+
+    const hintMin = t.minutesHint ? ` · ${t.minutesHint} min` : "";
+    const cat = t.category || "Sans catégorie";
+    focusMeta.textContent = `${cat} · P${t.priority}${hintMin}`;
+
+    focusEth.textContent = `${t.ethorionRemaining}/${t.ethorionTotal}`;
+    focusPrio.textContent = String(t.priority);
+
+    const total = Math.max(1, t.ethorionTotal||1);
+    const rem = clamp(t.ethorionRemaining||0, 0, total);
+    const pctLeft = clamp(Math.round((rem/total)*100), 0, 100);
+    tFill.style.width = `${pctLeft}%`;
+    tLabel.textContent = `${pctLeft}%`;
+
+    btnDego.disabled = false;
+    btnNotes.disabled = false;
+    btnDone.disabled = false;
+  }
+
+  function renderAll(){
+    renderCounters();
+    renderFocus();
+    renderDrawer();
+  }
+
+  // =========================
+  // Drawer Tabs + Content
+  // =========================
+  const TAB_DEFS = [
+    { key:"inbox",   label:"Inbox" },
+    { key:"liste",   label:"Liste" },
+    { key:"cats",    label:"Cat" },
+    { key:"sets",    label:"Sets" },
+    { key:"mode",    label:"Mode" },
+    { key:"energie", label:"Énergie" },
+    { key:"notes",   label:"Notes" },
+    { key:"hist",    label:"Hist" },
+    { key:"rapport", label:"Rapport" }
+  ];
+
+  function setTab(key){
+    state.ui.activeTab = key;
+    save();
+    renderDrawer();
+  }
+
+  function renderTabs(){
+    tabs.innerHTML = "";
+    TAB_DEFS.forEach(t=>{
+      const b = document.createElement("button");
+      b.className = "tab" + (state.ui.activeTab===t.key ? " active" : "");
+      b.textContent = t.label;
+      b.addEventListener("click", ()=> setTab(t.key));
+      tabs.appendChild(b);
+    });
+  }
+
+  function esc(s){
+    return String(s ?? "").replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[c]));
+  }
+
+  function miniBarPct(rem, total){
+    total = Math.max(1, total||1);
+    rem = clamp(rem||0, 0, total);
+    return clamp(Math.round((rem/total)*100), 0, 100);
+  }
+
+  function renderTaskRow(t, {draggable=false}={}){
+    const row = document.createElement("div");
+    row.className = "trow";
+    row.dataset.id = t.id;
+
+    const pct = miniBarPct(t.ethorionRemaining, t.ethorionTotal);
+
+    row.innerHTML = `
+      <div class="trowTop">
+        <div style="min-width:0;">
+          <div class="tname ${t.done ? "done":""}">${esc(t.title)}</div>
+          <div class="tmini">
+            <span>${esc(t.category||"Sans catégorie")}</span>
+            <span>·</span>
+            <span>P${esc(String(t.priority))}</span>
+            <span>·</span>
+            <span>ETH ${esc(String(t.ethorionRemaining))}/${esc(String(t.ethorionTotal))}</span>
+          </div>
+        </div>
+        <div class="tacts">
+          ${!t.done ? `<button class="btn" data-a="focus">Focus</button>` : ""}
+          ${!t.done ? `<button class="btn" data-a="eth">Eth</button>` : ""}
+          ${!t.done ? `<button class="btn" data-a="dup">Dupl</button>` : ""}
+          ${!t.done ? `<button class="btn" data-a="ok">OK</button>` : ""}
+          <button class="btn" data-a="x">X</button>
+        </div>
+      </div>
+      <div class="sbarMiniWrap" aria-label="Progression">
+        <div class="sbarMiniFill" style="width:${pct}%"></div>
+      </div>
+    `;
+
+    row.querySelectorAll("[data-a]").forEach(btn=>{
+      const a = btn.dataset.a;
+      btn.addEventListener("click", ()=>{
+        if(a==="focus"){ setFocus(t.id); renderAll(); }
+        if(a==="eth"){ setEthorion(t.id); }
+        if(a==="dup"){ duplicateTask(t.id); }
+        if(a==="ok"){ finishTask(t.id); }
+        if(a==="x"){ deleteTask(t.id); }
+      });
+    });
+
+    if(draggable && !t.done){
+      row.draggable = true;
+      row.style.cursor = "grab";
+    }
+
+    return row;
+  }
+
+  function renderDrawerInbox(){
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="cardTitle"><span>Inbox</span><span>Ctrl/⌘+Enter</span></div>
+      <textarea id="inboxTA" placeholder="Colle une liste.
+Lignes finissant par : = catégories.
+Tout le reste = tâches."></textarea>
+      <div class="rowBtns">
+        <button class="btn" id="btnAdd">Ajouter</button>
+        <button class="btn" id="btnBaseline">Fixer départ</button>
+      </div>
+    `;
+    const ta = card.querySelector("#inboxTA");
+    const add = card.querySelector("#btnAdd");
+    const baseline = card.querySelector("#btnBaseline");
+
+    add.addEventListener("click", ()=>{
+      addTasksFromText(ta.value);
+      ta.value = "";
+    });
+
+    baseline.addEventListener("click", ()=>{
+      pushHistory("Fixer départ");
+      setDayBaseline("Départ re-fixé");
+      renderAll();
+      showToast("Départ fixé.", 1500);
+      floatSay("Départ verrouillé. On y va.");
+    });
+
+    ta.addEventListener("keydown", (e)=>{
+      if((e.ctrlKey||e.metaKey) && e.key==="Enter"){
+        e.preventDefault();
+        add.click();
+      }
+    });
+
+    return card;
+  }
+
+  function renderDrawerList(){
+    const wrap = document.createElement("div");
+    wrap.className = "card";
+    wrap.innerHTML = `
+      <div class="cardTitle">
+        <span>Liste</span>
+        <span>
+          <select id="sortSel" aria-label="Tri">
+            <option value="order">Tri: ordre</option>
+            <option value="prio">Tri: priorité</option>
+            <option value="eth">Tri: ethorion</option>
+            <option value="cat">Tri: catégorie</option>
+          </select>
+        </span>
+      </div>
+      <div class="list" id="taskList"></div>
+      <details>
+        <summary>Terminé</summary>
+        <div class="inside">
+          <div class="list" id="doneList"></div>
+        </div>
+      </details>
+    `;
+
+    const sortSel = wrap.querySelector("#sortSel");
+    sortSel.value = state.ui.sort || "order";
+    sortSel.addEventListener("change", ()=>{
+      pushHistory("Tri");
+      state.ui.sort = sortSel.value;
+      save();
+      renderDrawer();
+    });
+
+    const list = wrap.querySelector("#taskList");
+    const items = getActiveSorted();
+    const draggable = (state.ui.sort==="order");
+    items.forEach(t=> list.appendChild(renderTaskRow(t, {draggable})));
+
+    if(draggable){
+      let dragId = null;
+
+      list.addEventListener("dragstart", (e)=>{
+        const row = e.target.closest(".trow");
+        if(!row) return;
+        dragId = row.dataset.id;
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", dragId);
+      });
+
+      list.addEventListener("dragover", (e)=>{
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+      });
+
+      list.addEventListener("drop", (e)=>{
+        e.preventDefault();
+        const targetRow = e.target.closest(".trow");
+        if(!targetRow) return;
+
+        const fromId = e.dataTransfer.getData("text/plain") || dragId;
+        const toId = targetRow.dataset.id;
+        if(!fromId || !toId || fromId===toId) return;
+
+        const rows = [...list.querySelectorAll(".trow")];
+        const fromEl = rows.find(r=>r.dataset.id===fromId);
+        const toEl = rows.find(r=>r.dataset.id===toId);
+        if(!fromEl || !toEl) return;
+
+        pushHistory("Réordonner");
+
+        const rect = toEl.getBoundingClientRect();
+        const after = (e.clientY - rect.top) > rect.height/2;
+        if(after) toEl.after(fromEl);
+        else toEl.before(fromEl);
+
+        const ids = [...list.querySelectorAll(".trow")].map(r=>r.dataset.id);
+        applyOrderFromList(ids);
+
+        save();
+        renderDrawer();
+        showToast("Ordre mis à jour.", 1400);
+      });
+    }
+
+    const doneList = wrap.querySelector("#doneList");
+    state.tasks
+      .filter(t=>t.done)
+      .sort((a,b)=>(b.doneAt||0)-(a.doneAt||0))
+      .slice(0, 60)
+      .forEach(t=> doneList.appendChild(renderTaskRow(t)));
+
+    return wrap;
+  }
+
+  function groupByCategory(tasks){
+    const m = new Map();
+    tasks.forEach(t=>{
+      const k = t.category || "Sans catégorie";
+      if(!m.has(k)) m.set(k, []);
+      m.get(k).push(t);
+    });
+    const keys = [...m.keys()].sort((a,b)=>a.localeCompare(b, "fr"));
+    return {m, keys};
+  }
+
+  function renderDrawerCats(){
+    const wrap = document.createElement("div");
+    wrap.className = "card";
+    wrap.innerHTML = `<div class="cardTitle"><span>Catégories</span><span>pool actuel</span></div>`;
+
+    const items = getActiveSorted();
+    const {m, keys} = groupByCategory(items);
+
+    keys.forEach(cat=>{
+      const det = document.createElement("details");
+      det.open = false;
+      const sumEth = m.get(cat).reduce((a,t)=>a+(t.ethorionRemaining||0),0);
+      const sum = document.createElement("summary");
+      sum.textContent = `${cat} — ETH ${sumEth}`;
+      det.appendChild(sum);
+
+      const inside = document.createElement("div");
+      inside.className = "inside";
+      const list = document.createElement("div");
+      list.className = "list";
+      m.get(cat).forEach(t=> list.appendChild(renderTaskRow(t)));
+      inside.appendChild(list);
+      det.appendChild(inside);
+
+      wrap.appendChild(det);
+    });
+
+    return wrap;
+  }
+
+  function renderDrawerSets(){
+    const wrap = document.createElement("div");
+    wrap.className = "card";
+    wrap.innerHTML = `
+      <div class="cardTitle"><span>Sets</span><span>appliquer = ajouter</span></div>
+      <div class="list" id="setsList"></div>
+      <div class="rowBtns">
+        <button class="btn" id="btnNewSet">+ Set</button>
+      </div>
+    `;
+
+    const list = wrap.querySelector("#setsList");
+
+    state.sets.forEach(s=>{
+      const row = document.createElement("div");
+      row.className = "trow";
+      row.innerHTML = `
+        <div class="trowTop">
+          <div>
+            <div class="tname">${esc(s.name)}</div>
+            <div class="tmini">${esc(String((s.lines||[]).length))} lignes</div>
+          </div>
+          <div class="tacts">
+            <button class="btn" data-a="apply">Appliquer</button>
+            <button class="btn" data-a="edit">Éditer</button>
+            <button class="btn" data-a="del">X</button>
+          </div>
+        </div>
+      `;
+
+      row.querySelector('[data-a="apply"]').addEventListener("click", ()=>{
+        addTasksFromText((s.lines||[]).join("\n"));
+        showToast("Set appliqué.", 1500);
+        floatSay("Set injecté.");
+      });
+
+      row.querySelector('[data-a="edit"]').addEventListener("click", ()=>{
+        openSetEditor(s.id);
+      });
+
+      row.querySelector('[data-a="del"]').addEventListener("click", ()=>{
+        if(!confirm("Supprimer set ?")) return;
+        pushHistory("Supprimer set");
+        state.sets = state.sets.filter(x=>x.id!==s.id);
+        save();
+        renderDrawer();
+      });
+
+      list.appendChild(row);
+    });
+
+    wrap.querySelector("#btnNewSet").addEventListener("click", ()=> openSetEditor(null));
+    return wrap;
+  }
+
+  function openSetEditor(setId){
+    const s = setId ? state.sets.find(x=>x.id===setId) : null;
+
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="cardTitle"><span>${s ? "Éditer set" : "Nouveau set"}</span><span>catégories avec :</span></div>
+      <input type="text" id="setName" placeholder="Nom du set" value="${esc(s ? s.name : "")}">
+      <textarea id="setLines" placeholder="CATÉGORIE:
+Tâche — 3 ethorions — importance 2">${esc(s ? (s.lines||[]).join("\n") : "")}</textarea>
+      <div class="rowBtns">
+        <button class="btn" id="btnSaveSet">Enregistrer</button>
+        <button class="btn" id="btnCancelSet">Annuler</button>
+      </div>
+    `;
+
+    const name = card.querySelector("#setName");
+    const lines = card.querySelector("#setLines");
+    const saveBtn = card.querySelector("#btnSaveSet");
+    const cancelBtn = card.querySelector("#btnCancelSet");
+
+    saveBtn.addEventListener("click", ()=>{
+      const n = cleanLine(name.value).slice(0,60);
+      const ls = String(lines.value||"").split(/\r?\n/).map(cleanLine).filter(Boolean);
+      if(!n){ showToast("Nom ?", 1400); return; }
+      if(!ls.length){ showToast("Lignes ?", 1400); return; }
+
+      pushHistory("Enregistrer set");
+
+      if(s){
+        s.name = n;
+        s.lines = ls;
+      }else{
+        state.sets.push({ id:"set_"+uid(), name:n, lines: ls });
+      }
+      save();
+      renderDrawer();
+      showToast("OK", 1200);
+    });
+
+    cancelBtn.addEventListener("click", ()=> renderDrawer());
+    drawerBody.innerHTML = "";
+    drawerBody.appendChild(card);
+  }
+
+  function renderDrawerMode(){
+    const wrap = document.createElement("div");
+    wrap.className = "card";
+
+    const allCats = getAllCategories();
+    const included = (state.mode.includeCats||[]);
+
+    wrap.innerHTML = `
+      <div class="cardTitle"><span>Mode</span><span>cibles actives</span></div>
+
+      <select id="pickMode">
+        <option value="roulette">Roulette</option>
+        <option value="order">Ordre</option>
+      </select>
+
+      <select id="orderBy">
+        <option value="prio">Ordre: priorité</option>
+        <option value="alpha">Ordre: alphabétique</option>
+        <option value="chrono">Ordre: chronologie</option>
+        <option value="cat">Ordre: catégorie</option>
+        <option value="eth">Ordre: ethorions restants</option>
+      </select>
+
+      <textarea id="catFilter" placeholder="Catégories incluses (une par ligne).
+Vide = toutes."></textarea>
+
+      <div class="rowBtns">
+        <button class="btn" id="btnApplyMode">Appliquer</button>
+        <button class="btn" id="btnAllCats">Toutes</button>
+        <button class="btn" id="btnOnlyCurrentCat">Cat de la cible</button>
+      </div>
+
+      <div class="tmini">
+        Catégories connues : ${esc(allCats.join(" · ") || "—")}
+      </div>
+    `;
+
+    const pickMode = wrap.querySelector("#pickMode");
+    const orderBy  = wrap.querySelector("#orderBy");
+    const catFilter= wrap.querySelector("#catFilter");
+
+    pickMode.value = state.mode.pick || "roulette";
+    orderBy.value  = state.mode.orderBy || "prio";
+    catFilter.value = included.join("\n");
+
+    wrap.querySelector("#btnApplyMode").addEventListener("click", ()=>{
+      pushHistory("Mode sélection");
+      state.mode.pick = pickMode.value;
+      state.mode.orderBy = orderBy.value;
+
+      const raw = String(catFilter.value||"").trim();
+      state.mode.includeCats = raw
+        ? raw.split(/\r?\n/).map(s=>s.trim()).filter(Boolean)
+        : [];
+
+      // if focus becomes invalid (filtered out), re-pick
+      if(state.focusId){
+        const f = getTask(state.focusId);
+        if(f){
+          const pool = getActivePool();
+          if(!pool.some(x=>x.id===f.id)){
+            const nx = pickNext(true);
+            state.focusId = nx ? nx.id : null;
+          }
+        }
+      }
+
+      save();
+      renderAll();
+      showToast("Mode appliqué.", 1400);
+      floatSay("Filtres verrouillés.");
+    });
+
+    wrap.querySelector("#btnAllCats").addEventListener("click", ()=>{
+      catFilter.value = "";
+    });
+
+    wrap.querySelector("#btnOnlyCurrentCat").addEventListener("click", ()=>{
+      const t = getTask(state.focusId);
+      if(!t){ showToast("Pas de cible.", 1400); return; }
+      catFilter.value = (t.category || "Sans catégorie");
+    });
+
+    return wrap;
+  }
+
+  function renderDrawerEnergy(){
+    const wrap = document.createElement("div");
+    wrap.className = "card";
+    wrap.innerHTML = `
+      <div class="cardTitle"><span>Énergie</span><span>influence roulette</span></div>
+
+      <select id="lvl">
+        <option value="1">Énergie: basse</option>
+        <option value="2">Énergie: moyenne</option>
+        <option value="3">Énergie: haute</option>
+      </select>
+
+      <select id="mot">
+        <option value="1">Motivation: basse</option>
+        <option value="2">Motivation: moyenne</option>
+        <option value="3">Motivation: haute</option>
+      </select>
+
+      <div class="tmini">
+        Règle roulette : énergie basse = surtout tâches courtes (≤1), parfois 2–3.
+        Énergie haute = tâches plus longues acceptées.
+      </div>
+
+      <div class="rowBtns">
+        <button class="btn" id="btnApply">Appliquer</button>
+      </div>
+    `;
+
+    const lvl = wrap.querySelector("#lvl");
+    const mot = wrap.querySelector("#mot");
+    lvl.value = String(state.energyProfile.level||2);
+    mot.value = String(state.energyProfile.motivation||2);
+
+    wrap.querySelector("#btnApply").addEventListener("click", ()=>{
+      pushHistory("Énergie réglée");
+      state.energyProfile.level = parseInt(lvl.value,10);
+      state.energyProfile.motivation = parseInt(mot.value,10);
+      save();
+      renderAll();
+      showToast("OK", 1200);
+      floatSay("Réglage interne mis à jour.");
+    });
+
+    return wrap;
+  }
+
+  function renderDrawerNotes(){
+    const wrap = document.createElement("div");
+    wrap.className = "card";
+    wrap.innerHTML = `
+      <div class="cardTitle"><span>Notes</span><span>persistantes</span></div>
+      <textarea id="scratchTA" placeholder="Numéros, idées, micro-notes…">${esc(state.scratch||"")}</textarea>
+      <div class="rowBtns">
+        <button class="btn" id="btnSaveScratch">Enregistrer</button>
+        <button class="btn" id="btnClearScratch">Vider</button>
+      </div>
+    `;
+
+    const ta = wrap.querySelector("#scratchTA");
+    wrap.querySelector("#btnSaveScratch").addEventListener("click", ()=>{
+      pushHistory("Notes sauvegardées");
+      state.scratch = ta.value.slice(0, 20000);
+      save();
+      showToast("Notes ok.", 1200);
+      floatSay("Notes scellées.");
+    });
+
+    wrap.querySelector("#btnClearScratch").addEventListener("click", ()=>{
+      if(!confirm("Vider les notes ?")) return;
+      pushHistory("Notes vidées");
+      state.scratch = "";
+      save();
+      renderDrawer();
+      showToast("Vidé.", 1200);
+    });
+
+    return wrap;
+  }
+
+  function renderDrawerHist(){
+    const wrap = document.createElement("div");
+    wrap.className = "card";
+    wrap.innerHTML = `<div class="cardTitle"><span>Historique</span><span>visible</span></div>`;
+
+    const list = document.createElement("div");
+    list.className = "list";
+
+    state.events.slice().reverse().slice(0, 140).forEach(ev=>{
+      const row = document.createElement("div");
+      row.className = "trow";
+      const d = new Date(ev.t);
+      const ts = `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+      row.innerHTML = `<div class="tmini"><b>${esc(ts)}</b> · ${esc(ev.text)}</div>`;
+      list.appendChild(row);
+    });
+
+    wrap.appendChild(list);
+    return wrap;
+  }
+
+  function renderDrawerRapport(){
+    const wrap = document.createElement("div");
+    wrap.className = "card";
+    wrap.innerHTML = `<div class="cardTitle"><span>Rapport</span><span>jour</span></div>`;
+
+    const active = state.tasks.filter(t=>!t.done);
+    const done = state.tasks.filter(t=>t.done);
+
+    const leftTasks = active.length;
+    const leftEth = active.reduce((a,t)=>a+(t.ethorionRemaining||0),0);
+
+    const startT = state.day.startTasks || 0;
+    const startE = state.day.startEth || 0;
+    const doneTasks = done.length;
+    const elimEth = Math.max(0, startE - leftEth);
+
+    const pctTasks = (startT>0) ? Math.round((doneTasks/startT)*100) : 0;
+
+    const box = document.createElement("div");
+    box.className = "trow";
+    box.innerHTML = `
+      <div class="tname">Aujourd’hui</div>
+      <div class="tmini">Départ: ${esc(String(startT))} tâches · ${esc(String(startE))} ETH</div>
+      <div class="tmini">Reste: ${esc(String(leftTasks))} tâches · ${esc(String(leftEth))} ETH</div>
+      <div class="tmini">Éliminé: ${esc(String(elimEth))} ETH · Terminé: ${esc(String(doneTasks))} tâches (${esc(String(pctTasks))}%)</div>
+    `;
+
+    wrap.appendChild(box);
+
+    // by category
+    const byCat = {};
+    state.tasks.forEach(t=>{
+      const c = t.category || "Sans catégorie";
+      if(!byCat[c]) byCat[c] = { n:0, total:0, left:0 };
+      byCat[c].n++;
+      byCat[c].total += (t.ethorionTotal||0);
+      byCat[c].left += (t.done?0:(t.ethorionRemaining||0));
+    });
+
+    const list = document.createElement("div");
+    list.className = "list";
+    Object.keys(byCat).sort((a,b)=>a.localeCompare(b,"fr")).forEach(c=>{
+      const r = byCat[c];
+      const row = document.createElement("div");
+      row.className = "trow";
+      row.innerHTML = `
+        <div class="tname">${esc(c)}</div>
+        <div class="tmini">${esc(String(r.n))} tâches · ETH ${esc(String(r.left))}/${esc(String(r.total))}</div>
+      `;
+      list.appendChild(row);
+    });
+
+    wrap.appendChild(list);
+    return wrap;
+  }
+
+  function renderDrawer(){
+    renderTabs();
+    drawerBody.innerHTML = "";
+
+    const tab = state.ui.activeTab || "inbox";
+    if(tab==="inbox") drawerBody.appendChild(renderDrawerInbox());
+    else if(tab==="liste") drawerBody.appendChild(renderDrawerList());
+    else if(tab==="cats") drawerBody.appendChild(renderDrawerCats());
+    else if(tab==="sets") drawerBody.appendChild(renderDrawerSets());
+    else if(tab==="mode") drawerBody.appendChild(renderDrawerMode());
+    else if(tab==="energie") drawerBody.appendChild(renderDrawerEnergy());
+    else if(tab==="notes") drawerBody.appendChild(renderDrawerNotes());
+    else if(tab==="hist") drawerBody.appendChild(renderDrawerHist());
+    else if(tab==="rapport") drawerBody.appendChild(renderDrawerRapport());
+    else drawerBody.appendChild(renderDrawerInbox());
+  }
+
+  // =========================
+  // Notes for current task
+  // =========================
+  function openNotes(){
+    const t = getTask(state.focusId);
+    if(!t){
+      showToast("Pas de cible.", 1400);
+      floatSay("Aucune cible à annoter.");
+      return;
+    }
+
+    openDrawer();
+    setTab("inbox"); // keep tabs consistent but override body
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="cardTitle"><span>Notes</span><span>cible</span></div>
+      <textarea id="notesTA" placeholder="Notes">${esc(t.notes||"")}</textarea>
+      <div class="rowBtns">
+        <button class="btn" id="btnSaveNotes">Enregistrer</button>
+        <button class="btn" id="btnBack">Retour</button>
+      </div>
+    `;
+    const ta = card.querySelector("#notesTA");
+    card.querySelector("#btnSaveNotes").addEventListener("click", ()=>{
+      pushHistory("Note enregistrée");
+      t.notes = ta.value.slice(0, 12000);
+      save();
+      renderAll();
+      showToast("Note ok.", 1200);
+      floatSay("Trace conservée.");
+    });
+    card.querySelector("#btnBack").addEventListener("click", ()=>{
+      renderDrawer();
+    });
+
+    drawerBody.innerHTML = "";
+    drawerBody.appendChild(card);
+  }
+
+  // =========================
+  // Drawer open/close
+  // =========================
+  function openDrawer(){
+    overlay.classList.add("show");
+    drawer.classList.add("show");
+    renderDrawer();
+  }
+  function closeDrawer(){
+    overlay.classList.remove("show");
+    drawer.classList.remove("show");
+  }
+
+  btnMenu.addEventListener("click", ()=>{
+    if(drawer.classList.contains("show")) closeDrawer();
+    else openDrawer();
+  });
+  btnClose.addEventListener("click", closeDrawer);
+  overlay.addEventListener("click", closeDrawer);
+
+  // =========================
+  // Buttons wiring
+  // =========================
+  btnNewDay.addEventListener("click", newDay);
+  btnRoulette.addEventListener("click", roulette);
+  btnDego.addEventListener("click", degoOne);
+  btnNotes.addEventListener("click", openNotes);
+  btnDone.addEventListener("click", ()=>{
+    const t = getTask(state.focusId);
+    if(t) finishTask(t.id);
+  });
+  btnSkip.addEventListener("click", skip);
+
+  btnUndo.addEventListener("click", undo);
+  btnRedo.addEventListener("click", redo);
+
+  // Keyboard (minimal, no jargon)
+  window.addEventListener("keydown", (e)=>{
+    const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    const inField = (tag==="textarea" || tag==="input" || tag==="select");
+
+    if(e.key==="Escape"){
+      closeDrawer();
+      return;
+    }
+    if(inField) return;
+
+    if(e.key.toLowerCase()==="r"){ e.preventDefault(); roulette(); return; }
+    if(e.key.toLowerCase()==="d"){ e.preventDefault(); degoOne(); return; }
+    if(e.key.toLowerCase()==="m"){
+      e.preventDefault();
+      if(drawer.classList.contains("show")) closeDrawer();
+      else openDrawer();
+      return;
+    }
+
+    // undo/redo
+    if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="z" && !e.shiftKey){
+      e.preventDefault(); undo(); return;
+    }
+    if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="z" && e.shiftKey){
+      e.preventDefault(); redo(); return;
+    }
+  });
+
+  // =========================
+  // Float line + Toast + FX
+  // =========================
+  function showToast(msg, ms=1600){
+    toast.textContent = msg;
+    toast.classList.add("show");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=>toast.classList.remove("show"), ms);
+  }
+
+  function floatSay(msg, ms=3200){
+    floatLine.textContent = msg;
+    floatLine.classList.add("show");
+    clearTimeout(floatSay._t);
+    floatSay._t = setTimeout(()=>floatLine.classList.remove("show"), ms);
+  }
+
+  function resizeFx(){
+    fxCanvas.width = window.innerWidth * devicePixelRatio;
+    fxCanvas.height = window.innerHeight * devicePixelRatio;
+    fx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  }
+  window.addEventListener("resize", resizeFx);
+  resizeFx();
+
+  function confetti(strength=1){
+    const W = window.innerWidth, H = window.innerHeight;
+    const cx = W/2, cy = H*0.62;
+    const n = Math.floor(70*strength);
+    const parts = [];
+    for(let i=0;i<n;i++){
+      const a = -Math.PI/2 + (Math.random()-0.5)*1.6;
+      const sp = (3 + Math.random()*8)*strength;
+      parts.push({ x:cx, y:cy, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, life: 55+Math.random()*45, r: 1+Math.random()*3 });
+    }
+    let f=0;
+    const tick=()=>{
+      f++;
+      fx.clearRect(0,0,W,H);
+      fx.fillStyle="rgba(230,230,230,0.88)";
+      for(const p of parts){
+        p.x += p.vx; p.y += p.vy;
+        p.vy += 0.14;
+        p.life -= 1;
+        fx.globalAlpha = Math.max(0, p.life/100);
+        fx.beginPath();
+        fx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        fx.fill();
+      }
+      if(f<92) requestAnimationFrame(tick);
+      else fx.clearRect(0,0,W,H);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  function flash(){
+    const div = document.createElement("div");
+    div.style.position="fixed";
+    div.style.inset="0";
+    div.style.background="rgba(242,242,242,0.10)";
+    div.style.pointerEvents="none";
+    div.style.zIndex="115";
+    div.style.opacity="0";
+    div.style.transition="opacity 120ms ease";
+    document.body.appendChild(div);
+    requestAnimationFrame(()=> div.style.opacity="1");
+    setTimeout(()=> div.style.opacity="0", 160);
+    setTimeout(()=> div.remove(), 420);
+  }
+
+  function flashSoft(){
+    const div = document.createElement("div");
+    div.style.position="fixed";
+    div.style.inset="0";
+    div.style.background="rgba(242,242,242,0.06)";
+    div.style.pointerEvents="none";
+    div.style.zIndex="115";
+    div.style.opacity="0";
+    div.style.transition="opacity 140ms ease";
+    document.body.appendChild(div);
+    requestAnimationFrame(()=> div.style.opacity="1");
+    setTimeout(()=> div.style.opacity="0", 190);
+    setTimeout(()=> div.remove(), 520);
+  }
+
+  function boom(ms=1200){
+    // simple expanding shockwave
+    const W = window.innerWidth, H = window.innerHeight;
+    const cx = W/2, cy = H*0.60;
+    const start = now();
+    const dur = ms;
+
+    const tick=()=>{
+      const t = (now()-start)/dur;
+      fx.clearRect(0,0,W,H);
+      const k = Math.min(1, Math.max(0,t));
+      const r = 20 + k*Math.max(W,H)*0.55;
+
+      fx.globalAlpha = (1-k)*0.55;
+      fx.strokeStyle = "rgba(242,242,242,0.75)";
+      fx.lineWidth = 2 + (1-k)*6;
+      fx.beginPath();
+      fx.arc(cx,cy,r,0,Math.PI*2);
+      fx.stroke();
+
+      fx.globalAlpha = (1-k)*0.18;
+      fx.fillStyle = "rgba(242,242,242,0.35)";
+      fx.beginPath();
+      fx.arc(cx,cy,r*0.55,0,Math.PI*2);
+      fx.fill();
+
+      if(t<1) requestAnimationFrame(tick);
+      else fx.clearRect(0,0,W,H);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  // =========================
+  // Labels + helpers
+  // =========================
+  function energyLabel(v){
+    return (v===1 ? "basse" : v===2 ? "moyenne" : "haute");
+  }
+
+  function getAllCategories(){
+    const set = new Set();
+    state.tasks.forEach(t=> set.add(t.category || "Sans catégorie"));
+    return [...set].sort((a,b)=>a.localeCompare(b,"fr"));
+  }
+
+  // =========================
+  // Copy lines
+  // =========================
+  const LINES = [
+    "Un fragment de moins. Silence.",
+    "Coup net. Respire.",
+    "Ça tombe. Continue.",
+    "Propre. Efficace.",
+    "Un pas. Puis un autre."
+  ];
+  const DONE_POETIC = [
+    "Cible dissoute. Place à la suivante.",
+    "Fin propre. La charge baisse.",
+    "On avance. Sans bruit.",
+    "Un dossier de moins dans l’ombre."
+  ];
+  const DONE_LINES = [
+    "CIBLE EXTERMINÉE.",
+    "TERMINÉ.",
+    "ÉLIMINATION CONFIRMÉE.",
+    "MISSION FINIE."
+  ];
+  const DONE_EPIC = [
+    "DÉGOMMAGE MAJEUR.",
+    "CIBLE ANNIHILÉE.",
+    "EXTERMINATION TOTALE.",
+    "DOSSIER RÉDUIT EN POUSSIÈRE."
+  ];
+  const DONE_EPIC_POETIC = [
+    "Ça s’est effondré. Toi, tu restes debout.",
+    "La montagne a bougé. Tu l’as faite céder.",
+    "Même l’inertie cligne des yeux."
+  ];
+  const FINISH_ALL = [
+    "Plus rien à dégommer. Tu es officiellement un ninja administratif.",
+    "Mission complète. Champ de bataille nettoyé.",
+    "Silence. Tout est tombé."
+  ];
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  // =========================
+  // Init
+  // =========================
+  function init(){
+    ensureDay();
+
+    // ensure focus exists
+    if(state.focusId && !getTask(state.focusId)) state.focusId = null;
+    if(!state.focusId){
+      const t = pickNext(true);
+      state.focusId = t ? t.id : null;
+    }
+
+    save();
+    renderAll();
+    floatSay("Prête. Choisis une cible.");
+  }
+
+  init();
+
+})();
+</script>
+</body>
+</html>
